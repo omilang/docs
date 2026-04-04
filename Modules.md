@@ -20,18 +20,24 @@
 - [paths](#paths)
 - [time](#time)
 - [math](#math)
+- [json](#json)
+- [http](#http)
 
 ---
 
 ## How to Import a Module
 
-Built-in modules are imported the same way as user files, using `@import`:
+Built-in modules are imported with `@import` using the `omi/` prefix:
 
-```py
-@import "system" as sys
+```js
+@import "omi/system" as sys
+@import "omi/json" as json
+@import "omi/http" as http
 ```
 
-After import, all module functions are available through the alias (`sys` in this example).
+After import, all module functions are available through the alias via dot notation.
+
+> Optional arguments are shown in square brackets, for example `[fmt<string>]`.
 
 ---
 
@@ -39,26 +45,27 @@ After import, all module functions are available through the alias (`sys` in thi
 
 Module for OS interaction: command execution, environment variables, platform info, and process control.
 
-```py
-@import "system" as sys
+```js
+@import "omi/system" as sys
 ```
 
-| Function | Description |
-|---------|----------|
-| `sys.exec(command)` | Runs a shell command and returns output |
-| `sys.env(name)` | Gets an environment variable |
-| `sys.set_env(name, value)` | Sets an environment variable |
-| `sys.platform()` | Returns OS name: `"Windows"`, `"Linux"`, `"Darwin"` |
-| `sys.username()` | Current username |
-| `sys.cwd()` | Current working directory |
-| `sys.exit(code)` | Exits script with a status code |
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `sys.exec(command<string>)` | `command`: `string` | Runs a shell command and returns the output as `string` |
+| `sys.env(name<string>)` | `name`: `string` | Gets an environment variable value |
+| `sys.set_env(name<string>, value<string>)` | `name`: `string`, `value`: `string` | Sets an environment variable |
+| `sys.platform()` | — | Returns OS name: `"Windows"`, `"Linux"`, `"Darwin"` |
+| `sys.username()` | — | Returns the current username |
+| `sys.cwd()` | — | Returns the current working directory |
+| `sys.exit([code<number>])` | `[code]`: `number`, optional, default `0` | Exits the script with a status code |
 
-```py
-@import "system" as sys
+```js
+@import "omi/system" as sys
+
 print(sys.platform())
 print(sys.username())
 print(sys.cwd())
-var out = sys.exec("echo hello")
+var<string> out = sys.exec("echo hello")
 print(out)
 sys.exit(0)
 ```
@@ -69,27 +76,27 @@ sys.exit(0)
 
 Module for file system operations: create/remove files and directories, copy, move, list.
 
-```py
-@import "files" as fs
+```js
+@import "omi/files" as fs
 ```
 
-| Function | Description |
-|---------|----------|
-| `fs.cwd()` | Current working directory |
-| `fs.mkdir(path, parents)` | Creates directory. `parents=true` creates nested dirs |
-| `fs.rm(path)` | Removes a file |
-| `fs.rmdir(path)` | Removes a directory recursively |
-| `fs.list(path)` | Returns directory entries |
-| `fs.cp(src, dst)` | Copies file or directory |
-| `fs.mv(src, dst)` | Moves / renames |
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `fs.cwd()` | — | Returns the current working directory |
+| `fs.mkdir(path<string>, [parents<bool\|number>])` | `path`: `string`, `[parents]`: `bool | number`, optional, default `true` | Creates a directory; when `parents` is true, nested directories are created automatically |
+| `fs.rm(path<string>)` | `path`: `string` | Removes a file |
+| `fs.rmdir(path<string>)` | `path`: `string` | Removes a directory recursively |
+| `fs.list([path<string>])` | `[path]`: `string`, optional, default `"."` | Returns directory entries as `list<string>` |
+| `fs.cp(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Copies a file or directory |
+| `fs.mv(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Moves or renames a file/directory |
 
-```py
-@import "files" as fs
+```js
+@import "omi/files" as fs
 
 print(fs.cwd())
-fs.mkdir("out/logs", true)
+fs.mkdir("out/logs")
 fs.cp("main.omi", "out/main.omi")
-var entries = fs.list(".")
+var<list> entries = fs.list()
 print(entries)
 fs.rm("out/main.omi")
 fs.rmdir("out")
@@ -101,34 +108,33 @@ fs.rmdir("out")
 
 Module for file and directory path utilities.
 
-```py
-@import "paths" as p
+```js
+@import "omi/paths" as p
 ```
 
-| Function | Description |
-|---------|----------|
-| `p.join(parts)` | Joins path parts from a list of strings |
-| `p.abs(path)` | Converts relative path to absolute |
-| `p.exists(path)` | `1` if file/dir exists, `0` otherwise |
-| `p.ext(path)` | File extension (including dot, e.g. `".py"`) |
-| `p.name(path)` | File name from path |
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `p.join(parts<list<string>>)` | `parts`: `list<string>` | Joins path parts from a list of strings |
+| `p.abs(path<string>)` | `path`: `string` | Converts a relative path to an absolute path |
+| `p.exists(path<string>)` | `path`: `string` | Returns `true` if the file or directory exists |
+| `p.ext(path<string>)` | `path`: `string` | Returns the file extension, including the dot |
+| `p.name(path<string>)` | `path`: `string` | Returns the file name from a path |
 
-```py
-@import "paths" as p
+```js
+@import "omi/paths" as p
 
-var full = p.join(["src", "stdlib", "files.py"])
-print(full)
+var<string> full = p.join(["src", "stdlib", "files.py"])
+print(full)  // src/stdlib/files.py
 
-var absolute = p.abs(".")
+var<string> absolute = p.abs(".")
 print(absolute)
 
-var ex = p.exists("main.omi")
-if is ex:
+if is p.exists("main.omi"):
   print("main.omi exists")
 end
 
-print(p.ext("main.omi"))   // .omi
-print(p.name("src/run/run.py"))  // run.py
+print(p.ext("main.omi"))          // .omi
+print(p.name("src/run/run.py"))   // run.py
 ```
 
 ---
@@ -137,22 +143,22 @@ print(p.name("src/run/run.py"))  // run.py
 
 Module for time operations: current time, formatting, parsing, sleeping.
 
-```py
-@import "time" as t
+```js
+@import "omi/time" as t
 ```
 
-| Function | Description |
-|---------|----------|
-| `t.now()` | Unix timestamp of current moment |
-| `t.format(timestamp, fmt)` | Formats timestamp using pattern |
-| `t.parse(string, fmt)` | Parses string to Unix timestamp |
-| `t.sleep(seconds)` | Pauses execution for seconds |
-| `t.timezone()` | Timezone offset in hours |
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `t.now()` | — | Returns the current Unix timestamp |
+| `t.format(timestamp<number>, [fmt<string>])` | `timestamp`: `number`, `[fmt]`: `string`, optional, default `%Y-%m-%d %H:%M:%S` | Formats a timestamp using `strftime` syntax |
+| `t.parse(string<string>, [fmt<string>])` | `string`: `string`, `[fmt]`: `string`, optional, default `%Y-%m-%d %H:%M:%S` | Parses a date/time string into a Unix timestamp |
+| `t.sleep(seconds<number>)` | `seconds`: `number` | Pauses execution for N seconds |
+| `t.timezone()` | — | Returns the timezone offset in hours |
 
 **Formatting codes** use Python `strftime` codes:
 
 | Code | Description | Example |
-|------|----------|--------|
+|------|-------------|---------|
 | `%Y` | Year (4 digits) | `2026` |
 | `%m` | Month | `04` |
 | `%d` | Day | `02` |
@@ -160,13 +166,14 @@ Module for time operations: current time, formatting, parsing, sleeping.
 | `%M` | Minutes | `45` |
 | `%S` | Seconds | `00` |
 
-```py
-@import "time" as t
+```js
+@import "omi/time" as t
 
-var ts = t.now()
-print(t.format(ts, "%Y-%m-%d %H:%M:%S"))
+var<number> ts = t.now()
+print(t.format(ts))
+print(t.format(ts, "%d/%m/%Y"))
 
-var ts2 = t.parse("2026-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+var<number> ts2 = t.parse("2026-01-01 00:00:00")
 print(ts2)
 
 print(t.timezone())
@@ -179,48 +186,163 @@ t.sleep(1)
 
 Module for mathematical operations. Includes constants and functions.
 
-```py
-@import "math" as m
+```js
+@import "omi/math" as m
 ```
 
 ### Constants
 
 | Constant | Value |
-|-----------|----------|
-| `math.pi` | 3.141592653589793 |
-| `math.e` | 2.718281828459045 |
-| `math.inf` | Infinity |
+|---------|-------|
+| `m.pi` | 3.141592653589793 |
+| `m.e` | 2.718281828459045 |
+| `m.inf` | Infinity |
 
 ### Functions
 
-| Function | Description |
-|---------|----------|
-| `m.abs(n)` | Absolute value |
-| `m.round(n)` | Round to nearest integer |
-| `m.floor(n)` | Round down |
-| `m.ceil(n)` | Round up |
-| `m.sqrt(n)` | Square root |
-| `m.log(n, null)` | Natural logarithm |
-| `m.log(n, base)` | Logarithm with custom base |
-| `m.exp(n)` | Exponential (`e^n`) |
-| `m.min(lst)` | Minimum from list of numbers |
-| `m.max(lst)` | Maximum from list of numbers |
-| `m.random()` | Random float in `[0.0, 1.0]` |
-| `m.randint(a, b)` | Random integer in `[a, b]` |
-| `m.randfloat(a, b, digits)` | Random float with precision |
-| `m.choice(lst)` | Random item from list |
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `m.abs(n<number>)` | `n`: `number` | Absolute value |
+| `m.round(n<number>)` | `n`: `number` | Rounds to the nearest integer |
+| `m.floor(n<number>)` | `n`: `number` | Rounds down |
+| `m.ceil(n<number>)` | `n`: `number` | Rounds up |
+| `m.sqrt(n<number>)` | `n`: `number` | Square root |
+| `m.log(n<number>, [base<number>])` | `n`: `number`, `[base]`: `number`, optional | Logarithm; if `base` is omitted, natural logarithm is used |
+| `m.exp(n<number>)` | `n`: `number` | Exponential (`e^n`) |
+| `m.min(lst<list<number>>)` | `lst`: `list<number>` | Minimum value from a list of numbers |
+| `m.max(lst<list<number>>)` | `lst`: `list<number>` | Maximum value from a list of numbers |
+| `m.random()` | — | Random float in `[0.0, 1.0)` |
+| `m.randint(a<number>, b<number>)` | `a`: `number`, `b`: `number` | Random integer in `[a, b]` inclusive |
+| `m.randfloat(a<number>, b<number>, [digits<number>])` | `a`: `number`, `b`: `number`, `[digits]`: `number`, optional | Random float; `digits` controls decimal precision when provided |
+| `m.choice(lst<list>)` | `lst`: `list` | Random item from a list |
 
-```py
-@import "math" as m
+```js
+@import "omi/math" as m
 
 print(m.pi)
 print(m.sqrt(2))
-print(m.log(m.e, null))
+print(m.log(m.e))
 print(m.log(100, 10))
+print(m.randfloat(1, 5))
 print(m.randint(1, 6))
 print(m.choice(["rock", "paper", "scissors"]))
 
-var nums = [5, 3, 9, 1]
+var<list> nums = [5, 3, 9, 1]
 print(m.min(nums))
 print(m.max(nums))
+```
+
+---
+
+## json
+
+Module for JSON encoding, decoding, and file operations.
+
+```js
+@import "omi/json" as json
+```
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `json.parse(text<string>)` | `text`: `string` | Parses a JSON string into an Omi value |
+| `json.stringify(value<every>, [indent<number>])` | `value`: `every`, `[indent]`: `number`, optional | Serializes a value to JSON; `indent` enables pretty-print formatting |
+| `json.read(path<string>)` | `path`: `string` | Reads and parses a JSON file |
+| `json.write(path<string>, value<every>, [indent<number>])` | `path`: `string`, `value`: `every`, `[indent]`: `number`, optional | Writes a value to a JSON file |
+| `json.append(path<string>, value<every>)` | `path`: `string`, `value`: `every` | Appends a value to a JSON array file |
+| `json.exists(path<string>)` | `path`: `string` | Returns `true` if the file exists |
+
+`json.parse` returns a `dict`, `list`, number, string, or boolean depending on the JSON content.
+Dict fields are accessed with dot notation.
+
+```js
+@import "omi/json" as json
+
+// Parse from string
+var<dict> data = json.parse("{\"name\": \"Omi\", \"version\": 2}")
+print(data.name)     // Omi
+print(data.version)  // 2
+
+// Serialize to string
+var<string> s = json.stringify({"code": 200, "ok": true})
+print(s)
+
+// Read from file
+var<dict> config = json.read("config.json")
+print(config.host)
+
+// Write to file
+json.write("output.json", {"result": "ok"})
+json.write("pretty.json", {"result": "ok"}, 2)
+
+// Append to JSON array file
+json.append("log.json", {"event": "start"})
+
+// Check existence
+if is json.exists("config.json"):
+  print("config found")
+end
+```
+
+---
+
+## http
+
+Module for making HTTP requests. Uses only the Python standard library — no external dependencies required.
+
+```js
+@import "omi/http" as http
+```
+
+### Functions
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `http.get(url<string>, [headers<dict>])` | `url`: `string`, `[headers]`: `dict`, optional | Sends a GET request |
+| `http.post(url<string>, [body<every>], [headers<dict>])` | `url`: `string`, `[body]`: `every`, optional, `[headers]`: `dict`, optional | Sends a POST request |
+| `http.put(url<string>, [body<every>], [headers<dict>])` | `url`: `string`, `[body]`: `every`, optional, `[headers]`: `dict`, optional | Sends a PUT request |
+| `http.patch(url<string>, [body<every>], [headers<dict>])` | `url`: `string`, `[body]`: `every`, optional, `[headers]`: `dict`, optional | Sends a PATCH request |
+| `http.delete(url<string>, [headers<dict>])` | `url`: `string`, `[headers]`: `dict`, optional | Sends a DELETE request |
+| `http.request(method<string>, url<string>, [body<every>], [headers<dict>])` | `method`: `string`, `url`: `string`, `[body]`: `every`, optional, `[headers]`: `dict`, optional | Generic HTTP request |
+| `http.download(url<string>, path<string>)` | `url`: `string`, `path`: `string` | Downloads a file to disk |
+| `http.upload(url<string>, path<string>, [field_name<string>])` | `url`: `string`, `path`: `string`, `[field_name]`: `string`, optional, default `"file"` | Uploads a file via multipart form |
+
+### Response Object
+
+All request functions return a **Response** object with the following members accessible via dot notation:
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `.status` | int | HTTP status code (`200`, `404`, etc.) |
+| `.text` | string | Raw response body as text |
+| `.headers` | dict | Response headers |
+| `.json()` | any | Parses the response body as JSON |
+
+```js
+@import "omi/http" as http
+
+// Simple GET
+var<every> res = http.get("https://httpbin.org/get")
+print(res.status)   // 200
+print(res.text)     // raw body
+
+// Parse JSON response
+var<dict> data = res.json()
+print(data.origin)  // the caller IP
+
+// POST with JSON body
+var<dict> body = {"name": "Omi", "version": 2}
+var<every> res2 = http.post("https://httpbin.org/post", body)
+print(res2.status)
+
+// Custom headers
+var<dict> headers = {"Authorization": "Bearer mytoken"}
+var<every> res3 = http.get("https://api.example.com/data", headers)
+var<dict> result = res3.json()
+
+// Download a file
+http.download("https://example.com/file.zip", "downloads/file.zip")
+
+// Generic request
+var<every> res4 = http.request("DELETE", "https://api.example.com/items/1")
+print(res4.status)
 ```
