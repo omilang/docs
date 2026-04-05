@@ -889,6 +889,6 @@ Flags:
 
 | Flag | Description |
 |------|-------------|
-| `--version` | Print the Omi version and exit |
-| `--help` | Show help and links, then exit |
-| `--debug` | Print the parsed AST result after execution |
+| `--version` or `-v` | Print the Omi version and exit |
+| `--help` or `-h` | Show help and links, then exit |
+| `--debug` or `-d` | Print the parsed AST result after execution |
