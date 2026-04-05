@@ -17,6 +17,7 @@
 - [Basics](#basics)
   - [Comments](#comments)
   - [Variables](#variables)
+  - [Declaring Without a Value](#declaring-without-a-value)
   - [Data Types](#data-types)
   - [Built-in Constants](#built-in-constants)
 - [Operators](#operators)
@@ -38,7 +39,10 @@
   - [Default Arguments](#default-arguments)
   - [Keyword Arguments](#keyword-arguments)
   - [Functions as Arguments](#functions-as-arguments)
-- [Lists](#lists)
+- [Arrays](#arrays)
+  - [Typed Arrays](#typed-arrays)
+  - [Size-Constrained Arrays](#size-constrained-arrays)
+  - [Array Operations](#array-operations)
 - [Dictionaries](#dictionaries)
 - [Strings](#strings)
   - [F-strings](#f-strings)
@@ -47,6 +51,7 @@
   - [Function Annotations](#function-annotations)
   - [Union Types](#union-types)
   - [Type Aliases](#type-aliases)
+  - [Typed and Sized Arrays](#typed-and-sized-arrays)
   - [The void Type](#the-void-type)
   - [The null Type](#the-null-type)
   - [The every Type](#the-every-type)
@@ -74,7 +79,9 @@ var<int> x = 10 // This is also a comment
 
 ### Variables
 
-Variables are declared with the `var` keyword. Type annotations are recommended:
+Variables are declared with the `var` keyword. Type annotations are required unless `@use notypes` is active.
+
+Declare and assign in one line:
 
 ```js
 var<string> name = "OmiLang"
@@ -82,11 +89,21 @@ var<int> age = 1
 var<float> pi_approx = 3.14
 ```
 
-Reassignment also uses `var`:
+Declare without an initial value (assign later in code):
+
+```js
+var<string> username
+username = "Alice"
+print(username)   // Alice
+```
+
+Accessing a declared-but-unassigned variable produces a runtime error.
+
+Reassignment (no `var`, no type annotation):
 
 ```js
 var<int> x = 10
-var<int> x = x + 5
+x = x + 5
 ```
 
 ### Data Types
@@ -97,9 +114,10 @@ var<int> x = x + 5
 | `float` | `3.14` | Floating-point numbers |
 | `bool` | `true` / `false` | Boolean values |
 | `string` | `"hello"` | Text in double quotes |
-| `list` | `[1, 2, 3]` | Ordered collection |
+| `array` | `[1, 2, 3]` | Ordered collection |
 | `dict` | `{"key": value}` | Key-value mapping |
-| `null` | `null` | Absence of value |
+| `null` | `null` | An explicit null value |
+| `void` | — | Absence of any return value (functions only) |
 
 ### Built-in Constants
 
@@ -282,14 +300,14 @@ Output: `0`, `1`, `2`, `4`
 Functions are declared with `func`, closed with `end`. The return type goes in `<>` after `func`; parameter types go after each parameter name:
 
 ```js
-func<every> greet(name<string>):
+func<void> greet(name<string>):
   print("Hello, ~name!")
 end
 
 greet("World")
 ```
 
-Use `every` as the return type when the function does not meaningfully return a value (i.e. returns `null`).
+Use `void` as the return type when the function does not return a value:
 
 ### Arrow Functions
 
@@ -321,7 +339,7 @@ end
 print(factorial(5))  // 120
 ```
 
-If `return` is omitted, the function returns `null`.
+If `return` is omitted in a regular function, it returns `void`. Use `func<void>` for such functions.
 
 ### Default Arguments
 
@@ -361,42 +379,62 @@ print(apply(double, 5))  // 10
 
 ---
 
-## Lists
+## Arrays
 
-Lists are created with square brackets:
+Arrays are created with square brackets:
 
 ```js
-var<list> fruits = ["apple", "banana", "orange"]
-var<list> numbers = [1, 2, 3, 4, 5]
-var<list> mixed = [1, "two", 3]
-var<list> empty = []
+var<array> fruits = ["apple", "banana", "orange"]
+var<array> numbers = [1, 2, 3, 4, 5]
+var<array> empty = []
 ```
 
-List operations:
+### Typed Arrays
+
+Use `[type]` instead of `<array>` to restrict what element types are allowed:
 
 ```js
-var<list> items = [1, 2, 3]
-
-append(items, 4)           // items = [1, 2, 3, 4]
-pop(items, 0)              // removes item at index 0, returns it
-var<int> size = len(items) // 3
-
-var<list> a = [1, 2]
-var<list> b = [3, 4]
-extend(a, b)               // a = [1, 2, 3, 4]
+var[int] ids = [1, 2, 3]
+var[int | bool] flags = [1, true, 0, false]
 ```
 
-List concatenation and repetition:
+Assigning an element of the wrong type raises a type error.
+
+### Size-Constrained Arrays
+
+Add `(n)` after the annotation to limit the maximum number of elements.
+This limit is enforced on declaration, `+`/`*` operators, and `append()`/`extend()`:
 
 ```js
-var<list> result = [1, 2] + [3, 4]  // [1, 2, 3, 4]
-var<list> zeros = [0] * 5            // [0, 0, 0, 0, 0]
+var<array>(3) small = [1, 2, 3]     // max 3 elements (any type)
+var[int](5) ids = [1, 2, 3]         // max 5 int elements
 ```
 
-Element access uses `/`:
+### Array Operations
 
 ```js
-var<list> items = [10, 20, 30]
+var<array> items = [1, 2, 3]
+
+append(items, 4)            // items = [1, 2, 3, 4]
+pop(items, 0)               // removes item at index 0, returns it
+var<int> size = len(items)  // 3
+
+var<array> a = [1, 2]
+var<array> b = [3, 4]
+extend(a, b)                // a = [1, 2, 3, 4]
+```
+
+Operator shortcuts:
+
+| Expression | Meaning |
+|------------|---------|
+| `arr + val` | Append element |
+| `arr - idx` | Remove element at index |
+| `arr * arr2` | Concatenate two arrays |
+| `arr / idx` | Access element at index |
+
+```js
+var<array> items = [10, 20, 30]
 print(items / 0)   // 10
 print(items / 2)   // 30
 ```
@@ -528,8 +566,24 @@ var<int> count = 42
 var<string> name = "Alice"
 var<float> pi = 3.14
 var<bool> active = true
-var<list> items = [1, 2, 3]
+var<array> items = [1, 2, 3]
 var<dict> config = {"key": "value"}
+```
+
+Typed arrays and size constraints:
+
+```js
+var[int] ids = [1, 2, 3]           // only int elements allowed
+var[int | bool] flags = [1, true]  // int or bool elements
+var<array>(5) buf = []             // any elements, max 5
+var[string](3) names = []          // string elements, max 3
+```
+
+Declaring without an initial value (assign later):
+
+```js
+var<string> username
+username = "Bob"    // assigned later
 ```
 
 ### Function Annotations
@@ -552,7 +606,7 @@ func<void> log(msg<string>):
 end
 ```
 
-A `void` function may also use `return` without a value for early exit:
+A `void` function may use bare `return` for early exit:
 
 ```js
 func<void> check(flag<bool>):
@@ -561,7 +615,14 @@ func<void> check(flag<bool>):
 end
 ```
 
-`every` accepts any value (including `null`) and bypasses the return-type check entirely. Use it when the return type is genuinely variable:  
+Use `null` when the function explicitly returns `null`:
+
+```js
+func<null> maybe(x<int>) -> null
+```
+
+`every` accepts any value (including `null`) and bypasses the return-type check entirely. Use it when the return type is genuinely variable:
+
 ```js
 func<every> identity(x<every>) -> x
 ```
@@ -598,26 +659,35 @@ var<Direction> dir = "north"
 
 ### The void Type
 
-`void` is the return type for functions that do not return a value. A `void` function always returns `null` implicitly:
+`void` is the return type for functions that perform a side effect and do not return a value. A `void` function must use bare `return` (no value) for early exit, or simply fall through:
 
 ```js
 func<void> greet(name<string>):
   print("Hello, ~name!")
 end
+
+greet("World")
 ```
 
-Use `return` without a value for early exit from a `void` function:
+Early exit from a `void` function:
 
 ```js
 func<void> check(flag<bool>):
-  if flag: return
+  if flag: return    // bare return — OK for void
   print("not set")
 end
 ```
 
+Key rules:
+- `func<void>`: only bare `return` is allowed. `return null` → error.
+- `func<void>` cannot be an arrow function (arrow functions always produce a value).
+- `void` cannot be used as a variable type annotation.
+- `typeof()` returns `"void"` for the result of a void function call.
+- `is_null()` returns `false` for a void value.
+
 ### The null Type
 
-`null` is both a type and the built-in constant that represents the absence of a value. Use `null` as a return type for functions that explicitly return `null`:
+`null` is both a type and the built-in constant that represents the explicit absence of a value. Use `null` as a return type for functions that **explicitly return `null`** with `return null`:
 
 ```js
 func<null> find(key<string>) -> null   // always null in this example
@@ -625,10 +695,12 @@ func<null> find(key<string>) -> null   // always null in this example
 var<null | string> result = null
 ```
 
+> **`null` ≠ `void`**: `func<null>` must `return null` explicitly — a bare `return` is an error. Use `func<void>` for functions that return nothing.
+
 Check for null with `is_null()` or equality:
 
 ```js
-var x = null
+var<null> x = null
 print(is_null(x))    // true
 print(x == null)     // true
 ```
@@ -677,10 +749,10 @@ All functions return `true` or `false`:
 | `is_float(value)` | Whether argument is a float |
 | `is_bool(value)` | Whether argument is a boolean |
 | `is_string(value)` | Whether argument is a string |
-| `is_list(value)` | Whether argument is a list |
+| `is_array(value)` | Whether argument is an array |
 | `is_dict(value)` | Whether argument is a dict |
 | `is_function(value)` | Whether argument is a function |
-| `is_null(value)` | Whether argument is `null` |
+| `is_null(value)` | Whether argument is `null` (returns `false` for `void`) |
 
 ### List Utilities
 
@@ -695,7 +767,12 @@ All functions return `true` or `false`:
 
 | Function | Description |
 |---------|-------------|
-| `clear()` / `cls()` | Clears the console |
+| `typeof(value)` | Returns the type name as a string: `"int"`, `"float"`, `"string"`, `"bool"`, `"array"`, `"dict"`, `"call"`, `"null"`, `"void"` |
+| `to_string(value)` | Convert to string |
+| `to_int(value)` | Convert to integer |
+| `to_float(value)` | Convert to float |
+| `to_bool(value)` | Convert to boolean |
+| `clear()` | Clears the console |
 | `eval(code)` | Executes a string as Omi code (requires `@use eval`) |
 
 ---
@@ -807,3 +884,11 @@ Run a script file:
 ```
 python shell.py run filename.omi
 ```
+
+Flags:
+
+| Flag | Description |
+|------|-------------|
+| `--version` | Print the Omi version and exit |
+| `--help` | Show help and links, then exit |
+| `--debug` | Print the parsed AST result after execution |
