@@ -240,7 +240,9 @@ if x > 0: print("positive")
 
 ### for loop
 
-The `for` loop iterates from a start value to an end value:
+The `for` loop supports two forms:
+
+- Numeric range form: iterate over integers (inclusive start, exclusive end)
 
 ```js
 for i = 0 to 5:
@@ -250,21 +252,33 @@ end
 
 Output: `0`, `1`, `2`, `3`, `4`
 
-With custom step:
+You can specify a `step` (positive or negative):
 
 ```js
 for i = 0 to 10 step 2:
   print(i)
 end
-```
 
-With negative step:
-
-```js
 for i = 10 to 1 step -1:
   print(i)
 end
 ```
+
+**Iterable form**
+
+- iterate over the elements of an array using `to`. The loop variable receives each
+element value in turn. Works with arrays (`var[...]` or `var<array>`)
+
+```js
+var[string] fruits = ["apple", "banana", "pear"]
+for item to fruits:
+  print(item)
+end
+```
+
+Output: `apple`, `banana`, `pear`
+
+The iterable form does not use `step` or `=`, write `for <ident> to <iterable>:`
 
 ### while loop
 
