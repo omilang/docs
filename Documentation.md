@@ -25,6 +25,7 @@
   - [Comparison Operators](#comparison-operators)
   - [Logical Operators](#logical-operators)
   - [Ternary Operator](#ternary-operator)
+  - [Null Coalescing Operator](#null-coalescing-operator)
 - [Conditions](#conditions)
   - [if / elif / else](#if--elif--else)
   - [Single-line Form](#single-line-form)
@@ -44,12 +45,16 @@
   - [Size-Constrained Arrays](#size-constrained-arrays)
   - [Array Operations](#array-operations)
 - [Dictionaries](#dictionaries)
+  - [Access Syntax](#access-syntax)
+  - [Nested Dicts](#nested-dicts)
+  - [Typing Dictionaries](#typing-dictionaries)
 - [Strings](#strings)
   - [F-strings](#f-strings)
 - [Type Annotations](#type-annotations)
   - [Variable Annotations](#variable-annotations)
   - [Function Annotations](#function-annotations)
   - [Union Types](#union-types)
+  - [Nullable Types](#nullable-types)
   - [Type Aliases](#type-aliases)
   - [Typed and Sized Arrays](#typed-and-sized-arrays)
   - [The void Type](#the-void-type)
@@ -61,6 +66,7 @@
   - [@import](#import)
   - [@use](#use)
   - [@set](#set)
+  - [type](#type-keyword)
 - [eval](#eval)
 - [Interactive Shell](#interactive-shell)
 
@@ -201,6 +207,39 @@ The ternary can also be used inline inside f-strings:
 var<int> score = 75
 var<string> grade = "passed" ~ (score >= 60) ~ "failed"
 print("Score ~score: ~grade")  // Score 75: passed
+```
+
+---
+
+### Null Coalescing Operator
+
+The `??` operator returns its left operand if it is not `null` or `void`, otherwise it evaluates and returns the right operand:
+
+```js
+var<int?> port = null
+var<int> final = port ?? 8080    // final = 8080
+
+port = 1111
+var<int> final2 = port ?? 8080   // final2 = 1111
+```
+
+The right-hand side is only evaluated when the left side is `null` or `void`:
+
+```js
+var<string?> name = null
+var<string> display = name ?? "Anonymous"   // "Anonymous"
+
+name = "Alice"
+var<string> display2 = name ?? "Anonymous"  // "Alice"
+```
+
+`??` works with any nullable type and can be chained:
+
+```js
+var<string?> a = null
+var<string?> b = null
+var<string>  c = "default"
+var<string>  result = a ?? b ?? c           // "default"
 ```
 
 ---
@@ -473,14 +512,36 @@ var<dict> config = {
 }
 ```
 
-Access fields with dot notation:
+### Access Syntax
+
+Two equivalent ways to read a key:
 
 ```js
+// dot notation
 print(user.name)   // Alice
 print(user.age)    // 30
+
+// bracket notation
+print(user["name"])   // Alice
+print(user["age"])    // 30
 ```
 
-Nested dictionaries:
+Bracket notation works with any string expression — including variables and f-string keys.
+Both notations work inside f-string interpolations:
+
+```js
+var<string> key = "name"
+print("~(user["name"])")        // Alice
+print("host: ~(config.host)")   // localhost
+```
+
+Accessing a key that does not exist is a **runtime error**:
+
+```
+Runtime Error: Key 'missing' not found in dict
+```
+
+### Nested Dicts
 
 ```js
 var<dict> data = {
@@ -490,8 +551,63 @@ var<dict> data = {
     }
 }
 
-print(data.db.host)  // localhost
-print(data.db.port)  // 5432
+// mixed dot + bracket access:
+print(data.db.host)         // localhost
+print(data.db["port"])      // 5432
+print(data["db"]["host"])   // localhost
+```
+
+### Typing Dictionaries
+
+Use the `type` keyword to define a **structured dict type** — a named schema that validates field presence and types:
+
+```js
+type PersonType = {
+    name<string>,
+    age<int>,
+    city<string?>,      // optional — string or null; may be absent
+}
+```
+
+Assign a dict with that type annotation:
+
+```js
+var<PersonType> person = {
+    "name": "John",
+    "age": 25
+    // "city" is omitted — allowed because it is string?
+}
+```
+
+If a required field is missing or has the wrong type, a runtime error is raised:
+
+```
+Runtime Error: Dict is missing required field 'age'
+Runtime Error: Field 'age': Type error: expected <int>, got string ("twenty")
+```
+
+Nested dict types are defined inline with `: { ... }` syntax:
+
+```js
+type UserType = {
+    name<string>,
+    age<int?>,
+    address: {
+        street<string>,
+        zip<string?>,
+    }
+}
+
+var<UserType> user = {
+    "name": "Bob",
+    "address": {
+        "street": "123 Main St"
+    }
+}
+
+print(user.address.street)          // 123 Main St
+print(user.address["street"])       // 123 Main St
+print(user["address"]["street"])    // 123 Main St
 ```
 
 Check type with `is_dict()`:
@@ -652,9 +768,41 @@ var<int | string> id2 = "user_42"
 func<int | string> parse(raw<string>) -> raw
 ```
 
+### Nullable Types
+
+Add `?` after a type name to allow `null` as a value. `int?` is exactly equivalent to `int | null`:
+
+```js
+var<int?> port = null       // same as var<int | null>
+var<string?> name = null
+
+// You can still assign a real value:
+port = 8080
+name = "Alice"
+```
+
+Use `??` (null coalescing) together with nullable types:
+
+```js
+var<int?> port = null
+var<int> final = port ?? 9000   // 9000
+```
+
+In typed dict schemas, a nullable field (`string?`) is **optional** — it may be absent from the dict entirely:
+
+```js
+type Config = {
+    host<string>,
+    port<int?>,    // optional field
+}
+var<Config> cfg = {"host": "localhost"}   // valid — port is omitted
+```
+
 ### Type Aliases
 
-Use the `type` keyword to define reusable types:
+Use the `type` keyword to define reusable type names.
+
+**Simple aliases** — union of existing types or literal strings:
 
 ```js
 type Status = "ok" | "error" | "pending"
@@ -669,6 +817,30 @@ Literal types restrict to specific string values:
 ```js
 type Direction = "north" | "south" | "east" | "west"
 var<Direction> dir = "north"
+```
+
+**Structured dict types** — a named schema for dictionaries (see [Typing Dictionaries](#typing-dictionaries)):
+
+```js
+type PersonType = {
+    name<string>,
+    age<int>,
+    city<string?>,    // optional field
+}
+var<PersonType> p = {"name": "Alice", "age": 30}
+```
+
+Type aliases defined in **modules** are accessed with the module alias as a prefix: `alias.TypeName`. They can be bound to a short local name with `@set`:
+
+```js
+@import "models" as m
+// PersonType from models.omi is available as m.PersonType:
+
+var<m.PersonType> user = {"name": "Bob", "age": 25}
+
+// Bind to a short local name with @set:
+@set m.PersonType as Person
+var<Person> admin = {"name": "Root", "age": 40}
 ```
 
 ### The void Type
@@ -817,7 +989,22 @@ Built-in modules use the `omi/` prefix. User files are imported by relative path
 u.my_function()
 ```
 
-All module members are accessed via dot notation.
+All module members are accessed via dot notation. Member files must declare `@use module`.
+
+**Type aliases from modules** are automatically imported: any `type` defined inside the module file is available in the importing file without any extra step:
+
+```js
+// models.omi
+@use module
+type UserType = {
+    name<string>,
+    age<int>,
+}
+
+// main.omi
+@import "models" as m
+var<m.UserType> u = {"name": "Alice", "age": 30}   // m.UserType — alias prefix required
+```
 
 ### @use
 
@@ -829,7 +1016,7 @@ Enables or disables interpreter features for the current file:
 | `eval` | Enable the `eval()` built-in function |
 | `debug` | Enable debug mode |
 | `noecho` | Suppress `print()` output |
-| `module` | Mark this file as a module |
+| `module` | Mark this file as a module (required for user modules) |
 
 ```js
 @use eval
@@ -838,7 +1025,7 @@ Enables or disables interpreter features for the current file:
 
 ### @set
 
-Creates compile-time constants or aliases.
+Creates compile-time constants or aliases. The preprocessor substitutes the alias in all subsequent lines of source code.
 
 **Named constant:**
 
@@ -868,6 +1055,50 @@ let<string> name = "Omi"
 var<string> out = shell("echo hello")
 print(out)
 ```
+
+**Type alias rename** (bind an imported type to a short local name):
+
+```js
+@import "models" as m
+// m.PersonType is the qualified name from models.omi
+
+@set m.PersonType as P    // create local alias P → m.PersonType
+
+var<P> admin = {"name": "Root", "age": 0}
+```
+
+### type keyword
+
+Defines a named type alias at module or top-level scope.
+
+**Simple union type:**
+
+```js
+type Status = "ok" | "error" | "pending"
+type ID = int | string
+```
+
+**Nullable alias** (using `?`):
+
+```js
+type MaybeInt = int?    // equivalent to int | null
+```
+
+**Structured dict type:**
+
+```js
+type PersonType = {
+    name<string>,
+    age<int>,
+    bio<string?>,     // optional field (may be absent)
+    address: {        // nested dict schema
+        city<string>,
+        zip<string?>,
+    }
+}
+```
+
+All `type` definitions are exported from module files and become available in any file that imports that module.
 
 ---
 
