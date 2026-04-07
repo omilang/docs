@@ -919,10 +919,20 @@ var x = 42
 
 | Function | Description |
 |---------|-------------|
-| `print(value)` | Prints a value to the console |
-| `print_ret(value)` | Prints a value and returns it as a string |
+| `print(value)` | Prints a value **without** adding a newline. |
+| `println(value, [end])` | Prints a value and ends with `"\n"` by default. Optional `end` overrides the suffix. |
+| `reprint(value)` | Returns the string form of a value without printing it. |
+| `output(v1, v2, ...)` | Prints multiple values separated by spaces and ends the line. |
 | `input()` | Reads a line from stdin as a string |
-| `input_int()` | Reads an integer from stdin |
+
+```js
+print("hello")
+print(" world")
+println("!")          // hello world!\n
+println("bye", "\t") // bye\t
+output(1, 2, "hello", 3) // 1 2 hello 3\n
+var<string> s = reprint(42) // "42"
+```
 
 ### Type Checks
 
@@ -1015,7 +1025,7 @@ Enables or disables interpreter features for the current file:
 | `notypes` | Disable type checking (not recommended) |
 | `eval` | Enable the `eval()` built-in function |
 | `debug` | Enable debug mode |
-| `noecho` | Suppress `print()` output |
+| `noecho` | Suppress `print()` / `println()` / `output()` output |
 | `module` | Mark this file as a module (required for user modules) |
 
 ```js
