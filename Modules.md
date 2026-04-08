@@ -27,12 +27,12 @@
 
 ## How to Import a Module
 
-Built-in modules are imported with `@import` using the `omi/` prefix:
+Built-in modules are imported with `@import` using the `omi:` prefix:
 
 ```js
-@import "omi/system" as sys
-@import "omi/json" as json
-@import "omi/http" as http
+@import "omi:system" as sys
+@import "omi:json" as json
+@import "omi:http" as http
 ```
 
 After import, all module functions are available through the alias via dot notation.
@@ -46,7 +46,7 @@ After import, all module functions are available through the alias via dot notat
 Module for OS interaction: command execution, environment variables, platform info, and process control.
 
 ```js
-@import "omi/system" as sys
+@import "omi:system" as sys
 ```
 
 | Function | Accepted arguments | Description |
@@ -60,13 +60,13 @@ Module for OS interaction: command execution, environment variables, platform in
 | `sys.exit([code<number>])` | `[code]`: `number`, optional, default `0` | Exits the script with a status code |
 
 ```js
-@import "omi/system" as sys
+@import "omi:system" as sys
 
-print(sys.platform())
-print(sys.username())
-print(sys.cwd())
+println(sys.platform())
+println(sys.username())
+println(sys.cwd())
 var<string> out = sys.exec("echo hello")
-print(out)
+println(out)
 sys.exit(0)
 ```
 
@@ -77,7 +77,7 @@ sys.exit(0)
 Module for file system operations: create/remove files and directories, copy, move, list.
 
 ```js
-@import "omi/files" as fs
+@import "omi:files" as fs
 ```
 
 | Function | Accepted arguments | Description |
@@ -91,13 +91,13 @@ Module for file system operations: create/remove files and directories, copy, mo
 | `fs.mv(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Moves or renames a file/directory |
 
 ```js
-@import "omi/files" as fs
+@import "omi:files" as fs
 
-print(fs.cwd())
+println(fs.cwd())
 fs.mkdir("out/logs")
 fs.cp("main.omi", "out/main.omi")
 var<list> entries = fs.list()
-print(entries)
+println(entries)
 fs.rm("out/main.omi")
 fs.rmdir("out")
 ```
@@ -109,7 +109,7 @@ fs.rmdir("out")
 Module for file and directory path utilities.
 
 ```js
-@import "omi/paths" as p
+@import "omi:paths" as p
 ```
 
 | Function | Accepted arguments | Description |
@@ -121,20 +121,20 @@ Module for file and directory path utilities.
 | `p.name(path<string>)` | `path`: `string` | Returns the file name from a path |
 
 ```js
-@import "omi/paths" as p
+@import "omi:paths" as p
 
 var<string> full = p.join(["src", "stdlib", "files.py"])
-print(full)  // src/stdlib/files.py
+println(full)  // src/stdlib/files.py
 
 var<string> absolute = p.abs(".")
-print(absolute)
+println(absolute)
 
 if is p.exists("main.omi"):
-  print("main.omi exists")
+  println("main.omi exists")
 end
 
-print(p.ext("main.omi"))          // .omi
-print(p.name("src/run/run.py"))   // run.py
+println(p.ext("main.omi"))          // .omi
+println(p.name("src/run/run.py"))   // run.py
 ```
 
 ---
@@ -144,7 +144,7 @@ print(p.name("src/run/run.py"))   // run.py
 Module for time operations: current time, formatting, parsing, sleeping.
 
 ```js
-@import "omi/time" as t
+@import "omi:time" as t
 ```
 
 | Function | Accepted arguments | Description |
@@ -167,16 +167,16 @@ Module for time operations: current time, formatting, parsing, sleeping.
 | `%S` | Seconds | `00` |
 
 ```js
-@import "omi/time" as t
+@import "omi:time" as t
 
 var<number> ts = t.now()
-print(t.format(ts))
-print(t.format(ts, "%d/%m/%Y"))
+println(t.format(ts))
+println(t.format(ts, "%d/%m/%Y"))
 
 var<number> ts2 = t.parse("2026-01-01 00:00:00")
-print(ts2)
+println(ts2)
 
-print(t.timezone())
+println(t.timezone())
 t.sleep(1)
 ```
 
@@ -187,7 +187,7 @@ t.sleep(1)
 Module for mathematical operations. Includes constants and functions.
 
 ```js
-@import "omi/math" as m
+@import "omi:math" as m
 ```
 
 ### Constants
@@ -217,19 +217,19 @@ Module for mathematical operations. Includes constants and functions.
 | `m.choice(lst<list>)` | `lst`: `list` | Random item from a list |
 
 ```js
-@import "omi/math" as m
+@import "omi:math" as m
 
-print(m.pi)
-print(m.sqrt(2))
-print(m.log(m.e))
-print(m.log(100, 10))
-print(m.randfloat(1, 5))
-print(m.randint(1, 6))
-print(m.choice(["rock", "paper", "scissors"]))
+println(m.pi)
+println(m.sqrt(2))
+println(m.log(m.e))
+println(m.log(100, 10))
+println(m.randfloat(1, 5))
+println(m.randint(1, 6))
+println(m.choice(["rock", "paper", "scissors"]))
 
 var<list> nums = [5, 3, 9, 1]
-print(m.min(nums))
-print(m.max(nums))
+println(m.min(nums))
+println(m.max(nums))
 ```
 
 ---
@@ -239,7 +239,7 @@ print(m.max(nums))
 Module for JSON encoding, decoding, and file operations.
 
 ```js
-@import "omi/json" as json
+@import "omi:json" as json
 ```
 
 | Function | Accepted arguments | Description |
@@ -255,20 +255,20 @@ Module for JSON encoding, decoding, and file operations.
 Dict fields are accessed with dot notation.
 
 ```js
-@import "omi/json" as json
+@import "omi:json" as json
 
 // Parse from string
 var<dict> data = json.parse("{\"name\": \"Omi\", \"version\": 2}")
-print(data.name)     // Omi
-print(data.version)  // 2
+println(data.name)     // Omi
+println(data.version)  // 2
 
 // Serialize to string
 var<string> s = json.stringify({"code": 200, "ok": true})
-print(s)
+println(s)
 
 // Read from file
 var<dict> config = json.read("config.json")
-print(config.host)
+println(config.host)
 
 // Write to file
 json.write("output.json", {"result": "ok"})
@@ -279,7 +279,7 @@ json.append("log.json", {"event": "start"})
 
 // Check existence
 if is json.exists("config.json"):
-  print("config found")
+  println("config found")
 end
 ```
 
@@ -290,7 +290,7 @@ end
 Module for making HTTP requests. Uses only the Python standard library — no external dependencies required.
 
 ```js
-@import "omi/http" as http
+@import "omi:http" as http
 ```
 
 ### Functions
@@ -318,21 +318,21 @@ All request functions return a **Response** object with the following members ac
 | `.json()` | any | Parses the response body as JSON |
 
 ```js
-@import "omi/http" as http
+@import "omi:http" as http
 
 // Simple GET
 var<every> res = http.get("https://httpbin.org/get")
-print(res.status)   // 200
-print(res.text)     // raw body
+println(res.status)   // 200
+println(res.text)     // raw body
 
 // Parse JSON response
 var<dict> data = res.json()
-print(data.origin)  // the caller IP
+println(data.origin)  // the caller IP
 
 // POST with JSON body
 var<dict> body = {"name": "Omi", "version": 2}
 var<every> res2 = http.post("https://httpbin.org/post", body)
-print(res2.status)
+println(res2.status)
 
 // Custom headers
 var<dict> headers = {"Authorization": "Bearer mytoken"}
@@ -344,5 +344,5 @@ http.download("https://example.com/file.zip", "downloads/file.zip")
 
 // Generic request
 var<every> res4 = http.request("DELETE", "https://api.example.com/items/1")
-print(res4.status)
+println(res4.status)
 ```
