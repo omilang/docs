@@ -100,7 +100,7 @@ Declare without an initial value (assign later in code):
 ```js
 var<string> username
 username = "Alice"
-print(username)   // Alice
+println(username)   // Alice
 ```
 
 Accessing a declared-but-unassigned variable produces a runtime error.
@@ -177,12 +177,12 @@ var<int> result = (2 + 3) * 4  // 20
 var<int> x = 50
 
 if x > 0 and x < 100:
-  print("x is in range 0..100")
+  println("x is in range 0..100")
 end
 
 var<bool> exists = true
 if is exists:
-  print("exists")
+  println("exists")
 end
 ```
 
@@ -193,11 +193,11 @@ Syntax: ``true_value ~ condition ~ false_value``
 ```js
 var<int> age = 25
 var<string> label = "adult" ~ (age >= 18) ~ "minor"
-print(label)  // adult
+println(label)  // adult
 
 var<int> score = 55
 var<string> result = "passed" ~ (score >= 60) ~ "failed"
-print(result)  // failed
+println(result)  // failed
 ```
 
 The condition is evaluated; if truthy the left value is returned, otherwise the right value.
@@ -206,7 +206,7 @@ The ternary can also be used inline inside f-strings:
 ```js
 var<int> score = 75
 var<string> grade = "passed" ~ (score >= 60) ~ "failed"
-print("Score ~score: ~grade")  // Score 75: passed
+println("Score ~score: ~grade")  // Score 75: passed
 ```
 
 ---
@@ -254,11 +254,11 @@ Conditional blocks use `:` after the condition and are closed with ``end``:
 var<int> score = 85
 
 if score >= 90:
-  print("Excellent")
+  println("Excellent")
 elif score >= 70:
-  print("Good")
-else
-  print("Can be better")
+  println("Good")
+else:
+  println("Can be better")
 end
 ```
 
@@ -270,7 +270,7 @@ For simple cases, you can use one line:
 
 ```js
 var<int> x = 42
-if x > 0: print("positive")
+if x > 0: println("positive")
 ```
 
 ---
@@ -285,7 +285,7 @@ The `for` loop supports two forms:
 
 ```js
 for i = 0 to 5:
-  print(i)
+  println(i)
 end
 ```
 
@@ -295,11 +295,11 @@ You can specify a `step` (positive or negative):
 
 ```js
 for i = 0 to 10 step 2:
-  print(i)
+  println(i)
 end
 
 for i = 10 to 1 step -1:
-  print(i)
+  println(i)
 end
 ```
 
@@ -311,7 +311,7 @@ element value in turn. Works with arrays (`var[...]` or `var<array>`)
 ```js
 var[string] fruits = ["apple", "banana", "pear"]
 for item to fruits:
-  print(item)
+  println(item)
 end
 ```
 
@@ -324,7 +324,7 @@ The iterable form does not use `step` or `=`, write `for <ident> to <iterable>:`
 ```js
 var<int> i = 1
 while i <= 5:
-  print(i)
+  println(i)
   var<int> i = i + 1
 end
 ```
@@ -338,7 +338,7 @@ end
 for i = 0 to 10:
   if i == 5: break
   if i == 3: continue
-  print(i)
+  println(i)
 end
 ```
 
@@ -354,7 +354,7 @@ Functions are declared with `func`, closed with `end`. The return type goes in `
 
 ```js
 func<void> greet(name<string>):
-  print("Hello, ~name!")
+  println("Hello, ~name!")
 end
 
 greet("World")
@@ -368,7 +368,7 @@ Use `->` for compact single-expression functions. `end` is not required:
 
 ```js
 func<int> add(a<int>, b<int>) -> a + b
-print(add(2, 3))  // 5
+println(add(2, 3))  // 5
 
 func<int> double(n<int>) -> n * 2
 ```
@@ -389,7 +389,7 @@ func<int> factorial(n<int>):
   return result
 end
 
-print(factorial(5))  // 120
+println(factorial(5))  // 120
 ```
 
 If `return` is omitted in a regular function, it returns `void`. Use `func<void>` for such functions.
@@ -401,8 +401,8 @@ Parameters can have default values. Callers can omit them:
 ```js
 func<int> increment(n<int>, by<int> = 1) -> n + by
 
-print(increment(10))      // 11
-print(increment(10, 5))   // 15
+println(increment(10))      // 11
+println(increment(10, 5))   // 15
 ```
 
 ### Keyword Arguments
@@ -411,10 +411,10 @@ Arguments can be passed by name in any order:
 
 ```js
 func<int> sub(a<int>, b<int>) -> a - b
-print(sub(b=3, a=10))  // 7
+println(sub(b=3, a=10))  // 7
 
 func<string> describe(label<string>, count<int> = 0) -> "~label x~count"
-print(describe(count=7, label="things"))  // things x7
+println(describe(count=7, label="things"))  // things x7
 ```
 
 Named and positional arguments can be mixed: positional must come first.
@@ -427,7 +427,7 @@ Use the `call` type to accept a function as an argument:
 func<int> double(n<int>) -> n * 2
 
 func<int> apply(fn<call>, x<int>) -> fn(x)
-print(apply(double, 5))  // 10
+println(apply(double, 5))  // 10
 ```
 
 ---
@@ -488,8 +488,8 @@ Operator shortcuts:
 
 ```js
 var<array> items = [10, 20, 30]
-print(items / 0)   // 10
-print(items / 2)   // 30
+println(items / 0)   // 10
+println(items / 2)   // 30
 ```
 
 ---
@@ -518,12 +518,12 @@ Two equivalent ways to read a key:
 
 ```js
 // dot notation
-print(user.name)   // Alice
-print(user.age)    // 30
+println(user.name)   // Alice
+println(user.age)    // 30
 
 // bracket notation
-print(user["name"])   // Alice
-print(user["age"])    // 30
+println(user["name"])   // Alice
+println(user["age"])    // 30
 ```
 
 Bracket notation works with any string expression — including variables and f-string keys.
@@ -531,8 +531,8 @@ Both notations work inside f-string interpolations:
 
 ```js
 var<string> key = "name"
-print("~(user["name"])")        // Alice
-print("host: ~(config.host)")   // localhost
+println("~(user["name"])")        // Alice
+println("host: ~(config.host)")   // localhost
 ```
 
 Accessing a key that does not exist is a **runtime error**:
@@ -552,9 +552,9 @@ var<dict> data = {
 }
 
 // mixed dot + bracket access:
-print(data.db.host)         // localhost
-print(data.db["port"])      // 5432
-print(data["db"]["host"])   // localhost
+println(data.db.host)         // localhost
+println(data.db["port"])      // 5432
+println(data["db"]["host"])   // localhost
 ```
 
 ### Typing Dictionaries
@@ -605,16 +605,16 @@ var<UserType> user = {
     }
 }
 
-print(user.address.street)          // 123 Main St
-print(user.address["street"])       // 123 Main St
-print(user["address"]["street"])    // 123 Main St
+println(user.address.street)          // 123 Main St
+println(user.address["street"])       // 123 Main St
+println(user["address"]["street"])    // 123 Main St
 ```
 
 Check type with `is_dict()`:
 
 ```js
-print(is_dict(user))   // true
-print(is_dict(42))     // false
+println(is_dict(user))   // true
+println(is_dict(42))     // false
 ```
 
 ---
@@ -657,8 +657,8 @@ Any string can embed expressions using `~`. No special prefix is needed:
 var<string> name = "Omi"
 var<int> ver = 2
 
-print("~name version ~ver")    // Omi version 2
-print("Hello, ~name!")         // Hello, Omi!
+println("~name version ~ver")    // Omi version 2
+println("Hello, ~name!")         // Hello, Omi!
 ```
 
 Use parentheses for arbitrary expressions:
@@ -666,7 +666,7 @@ Use parentheses for arbitrary expressions:
 ```js
 var<int> a = 10
 var<int> b = 32
-print("~a + ~b = ~(a + b)")   // 10 + 32 = 42
+println("~a + ~b = ~(a + b)")   // 10 + 32 = 42
 ```
 
 Combining f-strings and the ternary operator:
@@ -674,13 +674,13 @@ Combining f-strings and the ternary operator:
 ```js
 var<int> score = 75
 var<string> grade = "passed" ~ (score >= 60) ~ "failed"
-print("Score ~score: ~grade")  // Score 75: passed
+println("Score ~score: ~grade")  // Score 75: passed
 ```
 
 To include a literal tilde, escape it:
 
 ```js
-print("Hello\~world")  // Hello~world
+println("Hello\~world")  // Hello~world
 ```
 
 ---
@@ -732,7 +732,7 @@ When a function does not return a value, annotate it with `void`:
 
 ```js
 func<void> log(msg<string>):
-  print("[LOG] ~msg")
+  println("[LOG] ~msg")
 end
 ```
 
@@ -741,7 +741,7 @@ A `void` function may use bare `return` for early exit:
 ```js
 func<void> check(flag<bool>):
   if flag: return
-  print("not set")
+  println("not set")
 end
 ```
 
@@ -849,7 +849,7 @@ var<Person> admin = {"name": "Root", "age": 40}
 
 ```js
 func<void> greet(name<string>):
-  print("Hello, ~name!")
+  println("Hello, ~name!")
 end
 
 greet("World")
@@ -860,7 +860,7 @@ Early exit from a `void` function:
 ```js
 func<void> check(flag<bool>):
   if flag: return    // bare return — OK for void
-  print("not set")
+  println("not set")
 end
 ```
 
@@ -887,8 +887,8 @@ Check for null with `is_null()` or equality:
 
 ```js
 var<null> x = null
-print(is_null(x))    // true
-print(x == null)     // true
+println(is_null(x))    // true
+println(x == null)     // true
 ```
 
 ### The every Type
@@ -919,10 +919,20 @@ var x = 42
 
 | Function | Description |
 |---------|-------------|
-| `print(value)` | Prints a value to the console |
-| `print_ret(value)` | Prints a value and returns it as a string |
+| `print(value)` | Prints a value **without** adding a newline. |
+| `println(value, [end])` | Prints a value and ends with `"\n"` by default. Optional `end` overrides the suffix. |
+| `reprint(value)` | Returns the string form of a value without printing it. |
+| `output(v1, v2, ...)` | Prints multiple values separated by spaces and ends the line. |
 | `input()` | Reads a line from stdin as a string |
-| `input_int()` | Reads an integer from stdin |
+
+```js
+print("hello")
+print(" world")
+println("!")          // hello world!\n
+println("bye", "\t") // bye\t
+output(1, 2, "hello", 3) // 1 2 hello 3\n
+var<string> s = reprint(42) // "42"
+```
 
 ### Type Checks
 
@@ -972,16 +982,16 @@ Directives start with `@` and are processed before execution.
 Loads a module (built-in or from a file) and binds it to an alias:
 
 ```js
-@import "omi/system" as sys
-@import "omi/json" as json
-@import "omi/http" as http
-@import "omi/math" as math
-@import "omi/files" as fs
-@import "omi/paths" as paths
-@import "omi/time" as time
+@import "omi:system" as sys
+@import "omi:json" as json
+@import "omi:http" as http
+@import "omi:math" as math
+@import "omi:files" as fs
+@import "omi:paths" as paths
+@import "omi:time" as time
 ```
 
-Built-in modules use the `omi/` prefix. User files are imported by relative path without extension:
+Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:
 
 ```js
 @import "utils" as u
@@ -1015,7 +1025,7 @@ Enables or disables interpreter features for the current file:
 | `notypes` | Disable type checking (not recommended) |
 | `eval` | Enable the `eval()` built-in function |
 | `debug` | Enable debug mode |
-| `noecho` | Suppress `print()` output |
+| `noecho` | Suppress `print()` / `println()` / `output()` output |
 | `module` | Mark this file as a module (required for user modules) |
 
 ```js
@@ -1033,8 +1043,8 @@ Creates compile-time constants or aliases. The preprocessor substitutes the alia
 @set VERSION as 2
 @set AUTHOR as "Kenyka"
 
-print("Version: ~VERSION")
-print("Author: ~AUTHOR")
+println("Version: ~VERSION")
+println("Author: ~AUTHOR")
 ```
 
 **Keyword alias** (replace a keyword with a custom name):
@@ -1049,11 +1059,11 @@ let<string> name = "Omi"
 **Function alias** (bind a module function to a short name):
 
 ```js
-@import "omi/system" as sys
+@import "omi:system" as sys
 @set sys.exec as shell
 
 var<string> out = shell("echo hello")
-print(out)
+println(out)
 ```
 
 **Type alias rename** (bind an imported type to a short local name):
@@ -1111,7 +1121,7 @@ All `type` definitions are exported from module files and become available in an
 
 var<string> code = "10 + 5"
 var<int> result = eval(code)
-print(result)  // 15
+println(result)  // 15
 ```
 
 ---

@@ -336,7 +336,7 @@ Execution orchestration:
 
 ### src/stdlib/
 
-Seven built-in modules imported via `@import "omi/..."`. Each module creates a `Module` object backed by its own symbol table filled with `StdlibFunction` instances.
+Seven built-in modules imported via `@import "omi:..."`. Each module creates a `Module` object backed by its own symbol table filled with `StdlibFunction` instances.
 
 | Module | Description |
 |--------|-------------|
@@ -354,7 +354,7 @@ Definitions and constants:
 - `token.py` — all `TT_*` token type strings and `TOKEN_DISPLAY_NAMES`
 - `keyword.py` — `KEYWORDS` list, `FILE_FORMAT`, `TYPE_LABELS`
 - `flags.py` — runtime feature flags (`notypes`, `debug`, `noecho`, `eval_enabled`)
-- `builtin.py` — `BUILTIN_MODULES` dict mapping `"omi/..."` to module factory functions
+- `builtin.py` — `BUILTIN_MODULES` dict mapping `"omi:..."` to module factory functions
 
 ---
 

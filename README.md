@@ -4,6 +4,8 @@
 
 > Complete guide to the Omi programming language
 
+**Documentation for the version:** 1.2.1
+
 ---
 
 ## Navigation
