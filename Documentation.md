@@ -981,9 +981,7 @@ All functions return `true` or `false`:
 | `pop(list, index)` | Removes and returns element by index (error on `const` arrays) |
 | `extend(listA, listB)` | Appends all elements from listB to listA (error on `const` arrays) |
 | `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
-| `range(stop)` | Returns an array of integers from `0` to `stop` (exclusive) |
-| `range(start, stop)` | Returns an array of integers from `start` to `stop` (exclusive) |
-| `range(start, stop, step)` | Returns an array of integers using the given step |
+| `range(stop)` / `range(start, stop, [step])` | Returns an array of integers from `0` to `stop` (exclusive), or from `start` to `stop` with optional `step` (default `1`) |
 
 ### Other
 
