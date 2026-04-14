@@ -18,6 +18,7 @@
   - [Comments](#comments)
   - [Variables](#variables)
   - [Declaring Without a Value](#declaring-without-a-value)
+  - [Constants](#constants)
   - [Data Types](#data-types)
   - [Built-in Constants](#built-in-constants)
 - [Operators](#operators)
@@ -111,6 +112,28 @@ Reassignment (no `var`, no type annotation):
 var<int> x = 10
 x = x + 5
 ```
+
+### Constants
+
+Use `const` to declare an immutable variable. Constants must be initialized at the point of declaration and cannot be reassigned or mutated.
+
+```js
+const<int> MAX = 100
+const<string> APP_NAME = "Omi"
+```
+
+With `@use notypes`:
+
+```js
+@use notypes
+const MAX = 100
+const APP_NAME = "Omi"
+```
+
+Rules:
+- Constants must have an initial value — `const<int> X` without `=` is a syntax error.
+- Reassignment (`MAX = 200`) raises a runtime error.
+- Mutating array constants via `append`, `pop`, or `extend` raises a runtime error.
 
 ### Data Types
 
@@ -954,10 +977,13 @@ All functions return `true` or `false`:
 
 | Function | Description |
 |---------|-------------|
-| `append(list, value)` | Appends an element to a list |
-| `pop(list, index)` | Removes and returns element by index |
-| `extend(listA, listB)` | Appends all elements from listB to listA |
-| `len(list)` | Returns list length |
+| `append(list, value)` | Appends an element to a list (error on `const` arrays) |
+| `pop(list, index)` | Removes and returns element by index (error on `const` arrays) |
+| `extend(listA, listB)` | Appends all elements from listB to listA (error on `const` arrays) |
+| `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
+| `range(stop)` | Returns an array of integers from `0` to `stop` (exclusive) |
+| `range(start, stop)` | Returns an array of integers from `start` to `stop` (exclusive) |
+| `range(start, stop, step)` | Returns an array of integers using the given step |
 
 ### Other
 
@@ -989,6 +1015,9 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:files" as fs
 @import "omi:paths" as paths
 @import "omi:time" as time
+@import "omi:txt" as txt
+@import "omi:string" as str
+@import "omi:regex" as rx
 ```
 
 Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:

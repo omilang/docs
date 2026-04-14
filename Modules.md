@@ -22,6 +22,9 @@
 - [math](#math)
 - [json](#json)
 - [http](#http)
+- [txt](#txt)
+- [string](#string)
+- [regex](#regex)
 
 ---
 
@@ -261,7 +264,7 @@ Dict fields are accessed with dot notation.
 var<dict> data = json.parse("{\"name\": \"Omi\", \"version\": 2}")
 println(data.name)     // Omi
 println(data.version)  // 2
-
+```
 // Serialize to string
 var<string> s = json.stringify({"code": 200, "ok": true})
 println(s)
@@ -324,7 +327,7 @@ All request functions return a **Response** object with the following members ac
 var<every> res = http.get("https://httpbin.org/get")
 println(res.status)   // 200
 println(res.text)     // raw body
-
+```
 // Parse JSON response
 var<dict> data = res.json()
 println(data.origin)  // the caller IP
@@ -345,4 +348,126 @@ http.download("https://example.com/file.zip", "downloads/file.zip")
 // Generic request
 var<every> res4 = http.request("DELETE", "https://api.example.com/items/1")
 println(res4.status)
+```
+
+---
+
+## txt
+
+Module for text file operations: reading, writing, appending, and managing plain-text files.
+
+```js
+@import "omi:txt" as txt
+```
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `txt.read(path<string>, [encoding<string>])` | `path`: `string`, `[encoding]`: `string`, optional, default `"utf-8"` | Reads entire file contents as a string |
+| `txt.write(path<string>, content<string>, [encoding<string>])` | `path`: `string`, `content`: `string`, `[encoding]`: `string`, optional | Writes a string to a file (overwrites) |
+| `txt.append(path<string>, content<string>, [encoding<string>])` | `path`: `string`, `content`: `string`, `[encoding]`: `string`, optional | Appends a string to a file |
+| `txt.lines(path<string>, [encoding<string>])` | `path`: `string`, `[encoding]`: `string`, optional | Returns file lines as `list<string>` (newlines stripped) |
+| `txt.write_lines(path<string>, lines<list>, [encoding<string>])` | `path`: `string`, `lines`: `list`, `[encoding]`: `string`, optional | Writes each list element as a line |
+| `txt.size(path<string>)` | `path`: `string` | Returns file size in bytes |
+| `txt.exists(path<string>)` | `path`: `string` | Returns `true` if the file exists |
+| `txt.backup(path<string>)` | `path`: `string` | Creates a timestamped `.bak` copy; returns the backup path |
+
+```js
+@import "omi:txt" as txt
+
+// Write and read back
+txt.write("notes.txt", "Hello, Omi!\n")
+var<string> content = txt.read("notes.txt")
+println(content)
+```
+// Append a line
+txt.append("notes.txt", "Second line\n")
+
+// Read as lines
+var<list> lines = txt.lines("notes.txt")
+for i = 0 to len(lines):
+  println(lines[i])
+end
+
+// File info
+println(txt.size("notes.txt"))     // bytes
+println(txt.exists("notes.txt"))   // true
+
+// Backup before overwrite
+var<string> bak = txt.backup("notes.txt")
+println("Backed up to: ~bak")
+```
+
+---
+
+## string
+
+Module for string manipulation: slicing, splitting, padding, and more.
+
+```js
+@import "omi:string" as str
+```
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `str.len(str<string>)` | `str`: `string` | Returns the number of characters |
+| `str.slice(str<string>, start<int>, end<int>)` | `str`: `string`, `start`: `int`, `end`: `int` | Returns a substring from `start` (inclusive) to `end` (exclusive) |
+| `str.split(str<string>, delimiter<string>)` | `str`: `string`, `delimiter`: `string` | Splits by delimiter, returns `list<string>` |
+| `str.join(list<list>, delimiter<string>)` | `list`: `list`, `delimiter`: `string` | Joins list elements with the delimiter |
+| `str.replace(str<string>, old<string>, new<string>, [count<int>])` | `str`, `old`, `new`: `string`; `[count]`: `int`, optional, default `-1` (all) | Replaces occurrences of `old` with `new` |
+| `str.trim(str<string>)` | `str`: `string` | Strips leading and trailing whitespace |
+| `str.trim_left(str<string>)` | `str`: `string` | Strips leading whitespace |
+| `str.trim_right(str<string>)` | `str`: `string` | Strips trailing whitespace |
+| `str.upper(str<string>)` | `str`: `string` | Converts to uppercase |
+| `str.lower(str<string>)` | `str`: `string` | Converts to lowercase |
+| `str.contains(str<string>, substring<string>)` | `str`, `substring`: `string` | Returns `true` if the substring is found |
+| `str.starts_with(str<string>, prefix<string>)` | `str`, `prefix`: `string` | Returns `true` if `str` starts with `prefix` |
+| `str.ends_with(str<string>, suffix<string>)` | `str`, `suffix`: `string` | Returns `true` if `str` ends with `suffix` |
+| `str.index_of(str<string>, substring<string>)` | `str`, `substring`: `string` | Returns the index of the first match, or `-1` |
+| `str.format(template<string>, values<list\|dict>)` | `template`: `string`, `values`: `list` or `dict` | Replaces `{}` positionally (list) or `{key}` by name (dict) |
+| `str.repeat(str<string>, count<int>)` | `str`: `string`, `count`: `int` | Repeats the string `count` times |
+| `str.pad_left(str<string>, length<int>, [char<string>])` | `str`: `string`, `length`: `int`, `[char]`: `string`, optional, default `" "` | Right-justifies string in field of `length` |
+| `str.pad_right(str<string>, length<int>, [char<string>])` | `str`: `string`, `length`: `int`, `[char]`: `string`, optional, default `" "` | Left-justifies string in field of `length` |
+| `str.reverse(str<string>)` | `str`: `string` | Reverses the string |
+
+```js
+@import "omi:string" as str
+
+println(str.upper("hello"))             // HELLO
+println(str.slice("hello world", 6, 11))  // world
+println(str.split("a,b,c", ","))        // ["a", "b", "c"]
+println(str.join(["x", "y", "z"], "-")) // x-y-z
+println(str.replace("aabbcc", "b", "X")) // aaXXcc
+println(str.trim("  hi  "))             // hi
+println(str.pad_left("5", 3, "0"))      // 005
+println(str.index_of("hello", "ll"))    // 2
+println(str.format("Hello, {}!", ["Omi"]))          // Hello, Omi!
+println(str.format("{name} is {age}", {"name": "Omi", "age": "2"}))
+```
+
+---
+
+## regex
+
+Module for regular expressions. Uses Python's `re` engine.
+
+```js
+@import "omi:regex" as rx
+```
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `rx.test(str<string>, pattern<string>)` | `str`, `pattern`: `string` | Returns `true` if `pattern` matches anywhere in `str` |
+| `rx.match(str<string>, pattern<string>)` | `str`, `pattern`: `string` | Returns the first match as a string, or `null` |
+| `rx.find_all(str<string>, pattern<string>)` | `str`, `pattern`: `string` | Returns all non-overlapping matches as `list<string>` |
+| `rx.replace(str<string>, pattern<string>, replacement<string>)` | `str`, `pattern`, `replacement`: `string` | Replaces all matches with `replacement` |
+| `rx.split(str<string>, pattern<string>)` | `str`, `pattern`: `string` | Splits `str` by the pattern, returns `list<string>` |
+
+```js
+@import "omi:regex" as rx
+
+println(rx.test("hello world", "\\bworld\\b"))   // true
+println(rx.match("foo 123 bar", "\\d+"))          // 123
+println(rx.find_all("cat bat sat", "[a-z]at"))    // ["cat", "bat", "sat"]
+println(rx.replace("2024-01-15", "-", "/"))       // 2024/01/15
+println(rx.split("one  two   three", "\\s+"))     // ["one", "two", "three"]
 ```
