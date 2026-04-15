@@ -158,6 +158,8 @@ AST node classes are in `src/nodes/`:
 | `TypeAliasNode` | `directives/typealiasN.py` | `type Name = ...` |
 | `UseDirectiveNode` | `directives/useN.py` | `@use flag` |
 | `SetDirectiveNode` | `directives/setN.py` | `@set ... as ...` |
+| `EnumDefNode` | `types/enumdef.py` | `enum Name = { ... }` |
+| `TraitDefNode` | `types/traitdef.py` | `trait Name = { ... }` |
 
 ### 4. Interpreter
 
@@ -180,6 +182,8 @@ The interpreter walks the AST and executes each node via `visit_*` methods:
 | `visit_ImportNode` | Loads stdlib or file module, exports type aliases to caller |
 | `visit_ModuleAccessNode` | Calls `get_member()` on `Module` or `Dict` |
 | `visit_TypeAliasNode` | Stores `__type_Name__` in symbol table |
+| `visit_EnumDefNode` | Stores the enum annotation and variant constructors/values |
+| `visit_TraitDefNode` | Stores `__trait_Name__` in symbol table |
 
 Runtime values are in `src/values/`:
 

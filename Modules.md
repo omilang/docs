@@ -42,37 +42,53 @@ After import, all module functions are available through the alias via dot notat
 
 > Optional arguments are shown in square brackets, for example `[fmt<string>]`.
 
+**Type-like definitions from modules** are automatically imported: any `type`, `trait`, or `enum` defined inside the module file is available in the importing file without any extra step.
+
+```js
+@import "models" as m
+
+var<m.UserType> u = {"name": "Alice", "age": 30}
+var<m.Color> favorite = m.Red
+var<m.Result<int, string>> result = m.Ok(200)
+```
+
 ---
 
 ## system
-
 Module for OS interaction: command execution, environment variables, platform info, and process control.
 
 ```js
 @import "omi:system" as sys
 ```
 
+### Constants
+
+| Constant | Type | Description |
+|----------|------|-------------|
+| `sys.platform` | string | OS name: `"Windows"`, `"Linux"`, `"Darwin"` |
+| `sys.username` | string | Current username |
+
+### Functions
+
 | Function | Accepted arguments | Description |
 |---------|---------------------|-------------|
 | `sys.exec(command<string>)` | `command`: `string` | Runs a shell command and returns the output as `string` |
 | `sys.env(name<string>)` | `name`: `string` | Gets an environment variable value |
 | `sys.set_env(name<string>, value<string>)` | `name`: `string`, `value`: `string` | Sets an environment variable |
-| `sys.platform()` | — | Returns OS name: `"Windows"`, `"Linux"`, `"Darwin"` |
-| `sys.username()` | — | Returns the current username |
 | `sys.cwd()` | — | Returns the current working directory |
 | `sys.exit([code<number>])` | `[code]`: `number`, optional, default `0` | Exits the script with a status code |
 
 ```js
 @import "omi:system" as sys
 
-println(sys.platform())
-println(sys.username())
+println(sys.platform)
+println(sys.username)
 println(sys.cwd())
 var<string> out = sys.exec("echo hello")
 println(out)
 sys.exit(0)
 ```
-
+`
 ---
 
 ## files

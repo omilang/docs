@@ -57,6 +57,7 @@
   - [Union Types](#union-types)
   - [Nullable Types](#nullable-types)
   - [Type Aliases](#type-aliases)
+  - [Enums and Traits](#enums-and-traits)
   - [Typed and Sized Arrays](#typed-and-sized-arrays)
   - [The void Type](#the-void-type)
   - [The null Type](#the-null-type)
@@ -865,6 +866,49 @@ var<m.PersonType> user = {"name": "Bob", "age": 25}
 @set m.PersonType as Person
 var<Person> admin = {"name": "Root", "age": 40}
 ```
+
+### Enums and Traits
+
+Omi supports algebraic data types through the `enum` keyword and structural interfaces through the `trait` keyword.
+
+Enums are desugared to dictionaries with a string `__tag` field. Variants without payloads become unit values, and payload variants store their data in `value`:
+
+```js
+enum Color = {
+  Red,
+  Green,
+  Blue
+}
+
+enum Result<T, E> = {
+  Ok(T),
+  Err(E)
+}
+
+var<Color> favorite = Green
+var<Result<int, string>> ok = Ok(200)
+
+println(favorite.__tag)  // Green
+println(ok.__tag)        // Ok
+println(ok.value)        // 200
+```
+
+Rules for enums:
+- Variant names must start with an uppercase letter and may contain letters, numbers, and underscores.
+- Each variant may have at most one payload value.
+- `enum` values are normal `dict` values at runtime, so regular dict access still works.
+- Imported enums are available as module-scoped type aliases via `@import`, and they can be renamed with `@set`.
+
+Traits define structural contracts:
+
+```js
+trait Serializable = {
+  func<string> to_json(),
+  func<string> desc()
+}
+```
+
+If a value's type provides all required methods with matching signatures, it satisfies the trait automatically. Traits can also be imported from modules and renamed with `@set`.
 
 ### The void Type
 
