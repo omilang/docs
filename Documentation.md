@@ -18,6 +18,7 @@
   - [Comments](#comments)
   - [Variables](#variables)
   - [Declaring Without a Value](#declaring-without-a-value)
+  - [Constants](#constants)
   - [Data Types](#data-types)
   - [Built-in Constants](#built-in-constants)
 - [Operators](#operators)
@@ -56,6 +57,7 @@
   - [Union Types](#union-types)
   - [Nullable Types](#nullable-types)
   - [Type Aliases](#type-aliases)
+  - [Enums and Traits](#enums-and-traits)
   - [Typed and Sized Arrays](#typed-and-sized-arrays)
   - [The void Type](#the-void-type)
   - [The null Type](#the-null-type)
@@ -111,6 +113,28 @@ Reassignment (no `var`, no type annotation):
 var<int> x = 10
 x = x + 5
 ```
+
+### Constants
+
+Use `const` to declare an immutable variable. Constants must be initialized at the point of declaration and cannot be reassigned or mutated.
+
+```js
+const<int> MAX = 100
+const<string> APP_NAME = "Omi"
+```
+
+With `@use notypes`:
+
+```js
+@use notypes
+const MAX = 100
+const APP_NAME = "Omi"
+```
+
+Rules:
+- Constants must have an initial value — `const<int> X` without `=` is a syntax error.
+- Reassignment (`MAX = 200`) raises a runtime error.
+- Mutating array constants via `append`, `pop`, or `extend` raises a runtime error.
 
 ### Data Types
 
@@ -843,6 +867,49 @@ var<m.PersonType> user = {"name": "Bob", "age": 25}
 var<Person> admin = {"name": "Root", "age": 40}
 ```
 
+### Enums and Traits
+
+Omi supports algebraic data types through the `enum` keyword and structural interfaces through the `trait` keyword.
+
+Enums are desugared to dictionaries with a string `__tag` field. Variants without payloads become unit values, and payload variants store their data in `value`:
+
+```js
+enum Color = {
+  Red,
+  Green,
+  Blue
+}
+
+enum Result<T, E> = {
+  Ok(T),
+  Err(E)
+}
+
+var<Color> favorite = Green
+var<Result<int, string>> ok = Ok(200)
+
+println(favorite.__tag)  // Green
+println(ok.__tag)        // Ok
+println(ok.value)        // 200
+```
+
+Rules for enums:
+- Variant names must start with an uppercase letter and may contain letters, numbers, and underscores.
+- Each variant may have at most one payload value.
+- `enum` values are normal `dict` values at runtime, so regular dict access still works.
+- Imported enums are available as module-scoped type aliases via `@import`, and they can be renamed with `@set`.
+
+Traits define structural contracts:
+
+```js
+trait Serializable = {
+  func<string> to_json(),
+  func<string> desc()
+}
+```
+
+If a value's type provides all required methods with matching signatures, it satisfies the trait automatically. Traits can also be imported from modules and renamed with `@set`.
+
 ### The void Type
 
 `void` is the return type for functions that perform a side effect and do not return a value. A `void` function must use bare `return` (no value) for early exit, or simply fall through:
@@ -954,10 +1021,11 @@ All functions return `true` or `false`:
 
 | Function | Description |
 |---------|-------------|
-| `append(list, value)` | Appends an element to a list |
-| `pop(list, index)` | Removes and returns element by index |
-| `extend(listA, listB)` | Appends all elements from listB to listA |
-| `len(list)` | Returns list length |
+| `append(list, value)` | Appends an element to a list (error on `const` arrays) |
+| `pop(list, index)` | Removes and returns element by index (error on `const` arrays) |
+| `extend(listA, listB)` | Appends all elements from listB to listA (error on `const` arrays) |
+| `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
+| `range(stop)` / `range(start, stop, [step])` | Returns an array of integers from `0` to `stop` (exclusive), or from `start` to `stop` with optional `step` (default `1`) |
 
 ### Other
 
@@ -989,6 +1057,9 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:files" as fs
 @import "omi:paths" as paths
 @import "omi:time" as time
+@import "omi:txt" as txt
+@import "omi:string" as str
+@import "omi:regex" as rx
 ```
 
 Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:
