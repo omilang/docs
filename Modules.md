@@ -40,6 +40,26 @@ Built-in modules are imported with `@import` using the `omi:` prefix:
 
 After import, all module functions are available through the alias via dot notation.
 
+### Sync and Async Calls
+
+All module functions have a single API surface. You choose execution mode at call site:
+
+- Sync call: `module.func(...)`
+- Async call (scheduled): `async module.func(...)` -> returns `future<T>`
+- Await form (inside `async func`): `async futureExpr`
+
+Example:
+
+```js
+@import "omi:time" as t
+
+async func<void> job():
+  var<future<null>> fut = async t.sleep(0.2)
+  async fut
+  println("done")
+end
+```
+
 > Optional arguments are shown in square brackets, for example `[fmt<string>]`.
 
 **Type-like definitions from modules** are automatically imported: any `type`, `trait`, or `enum` defined inside the module file is available in the importing file without any extra step.
@@ -325,6 +345,8 @@ Module for making HTTP requests. Uses only the Python standard library — no ex
 | `http.download(url<string>, path<string>)` | `url`: `string`, `path`: `string` | Downloads a file to disk |
 | `http.upload(url<string>, path<string>, [field_name<string>])` | `url`: `string`, `path`: `string`, `[field_name]`: `string`, optional, default `"file"` | Uploads a file via multipart form |
 
+Any `http.*` call can be scheduled asynchronously with `async` at call site.
+
 ### Response Object
 
 All request functions return a **Response** object with the following members accessible via dot notation:
@@ -386,6 +408,8 @@ Module for text file operations: reading, writing, appending, and managing plain
 | `txt.size(path<string>)` | `path`: `string` | Returns file size in bytes |
 | `txt.exists(path<string>)` | `path`: `string` | Returns `true` if the file exists |
 | `txt.backup(path<string>)` | `path`: `string` | Creates a timestamped `.bak` copy; returns the backup path |
+
+Any `txt.*` call can be scheduled asynchronously with `async` at call site.
 
 ```js
 @import "omi:txt" as txt

@@ -36,11 +36,15 @@
   - [break and continue](#break-and-continue)
 - [Functions](#functions)
   - [Function Declaration](#function-declaration)
+  - [Async Functions](#async-functions)
   - [Arrow Functions](#arrow-functions)
   - [return](#return)
   - [Default Arguments](#default-arguments)
   - [Keyword Arguments](#keyword-arguments)
   - [Functions as Arguments](#functions-as-arguments)
+- [Error Handling and Pattern Matching](#error-handling-and-pattern-matching)
+  - [try / catch](#try--catch)
+  - [match / case](#match--case)
 - [Arrays](#arrays)
   - [Typed Arrays](#typed-arrays)
   - [Size-Constrained Arrays](#size-constrained-arrays)
@@ -386,6 +390,39 @@ greet("World")
 
 Use `void` as the return type when the function does not return a value:
 
+### Async Functions
+
+Use `async func` to declare asynchronous functions.
+
+```js
+async func<int> fetch_id(url<string>):
+  // schedule blocking I/O in background
+  var<future<every>> r = async http.get(url)
+  var<every> res = async r
+  return res.status
+end
+```
+
+Rules:
+- `async func<T>` returns `future<T>` when called.
+- `async name(...)` schedules execution and immediately returns `future<...>`.
+- `async <futureExpr>` is the await form (waits for completion and unwraps value).
+- `async <futureExpr>` is allowed only inside `async func`.
+- `async <nonFutureExpr>` raises a runtime error.
+
+Typical usage:
+
+```js
+async func<void> worker():
+  var<future<null>> t = async time.sleep(0.1)
+  async t
+  println("done")
+end
+
+async worker()      // fire-and-forget scheduling
+println("scheduled")
+```
+
 ### Arrow Functions
 
 Use `->` for compact single-expression functions. `end` is not required:
@@ -452,6 +489,49 @@ func<int> double(n<int>) -> n * 2
 
 func<int> apply(fn<call>, x<int>) -> fn(x)
 println(apply(double, 5))  // 10
+```
+
+---
+
+## Error Handling and Pattern Matching
+
+### try / catch
+
+Use `try` and `catch` to handle runtime errors without stopping the whole script.
+
+```js
+try:
+  var<int> x = 10 / 0
+catch err:
+  println("ERR: ~err.msg")
+end
+```
+
+The `catch` variable is a dict-like error object with fields:
+- `type`
+- `msg`
+- `trace` (array of traceback lines)
+
+### match / case
+
+Use `match` for value/variant dispatch.
+
+```js
+match value:
+  case 0: println("zero")
+  case "ok": println("ok")
+  case _: println("fallback")
+end
+```
+
+Enum-style variant match with payload capture:
+
+```js
+match result:
+  case Ok(v): println(v)
+  case Err(e): println(e)
+  case _: println("unknown")
+end
 ```
 
 ---
