@@ -25,6 +25,7 @@
 - [txt](#txt)
 - [string](#string)
 - [regex](#regex)
+- [log](#log)
 
 ---
 
@@ -39,6 +40,27 @@ Built-in modules are imported with `@import` using the `omi:` prefix:
 ```
 
 After import, all module functions are available through the alias via dot notation.
+
+### Sync and Async Calls
+
+All module functions have a single API surface. You choose execution mode at call site:
+
+- Sync call: `module.func(...)`
+- Async call (scheduled): `async module.func(...)` -> returns `future<T>`
+- Await form (inside `async func`): `async futureExpr`
+- `@use noasync` disables async scheduling and await form in the current file
+
+Example:
+
+```js
+@import "omi:time" as t
+
+async func<void> job():
+  var<future<null>> fut = async t.sleep(0.2)
+  async fut
+  println("done")
+end
+```
 
 > Optional arguments are shown in square brackets, for example `[fmt<string>]`.
 
@@ -280,7 +302,7 @@ Dict fields are accessed with dot notation.
 var<dict> data = json.parse("{\"name\": \"Omi\", \"version\": 2}")
 println(data.name)     // Omi
 println(data.version)  // 2
-```
+
 // Serialize to string
 var<string> s = json.stringify({"code": 200, "ok": true})
 println(s)
@@ -325,6 +347,10 @@ Module for making HTTP requests. Uses only the Python standard library — no ex
 | `http.download(url<string>, path<string>)` | `url`: `string`, `path`: `string` | Downloads a file to disk |
 | `http.upload(url<string>, path<string>, [field_name<string>])` | `url`: `string`, `path`: `string`, `[field_name]`: `string`, optional, default `"file"` | Uploads a file via multipart form |
 
+Any `http.*` call can be scheduled asynchronously with `async` at call site.
+
+`http.req` is a built-in request shape for typed request payloads. It is a dict-like type with `method<string>`, `url<string>`, optional `body<every>`, and optional `headers<dict>` fields.
+
 ### Response Object
 
 All request functions return a **Response** object with the following members accessible via dot notation:
@@ -340,29 +366,29 @@ All request functions return a **Response** object with the following members ac
 @import "omi:http" as http
 
 // Simple GET
-var<every> res = http.get("https://httpbin.org/get")
+var<http.req> res = http.get("https://httpbin.org/get")
 println(res.status)   // 200
 println(res.text)     // raw body
-```
+
 // Parse JSON response
-var<dict> data = res.json()
+var<http.req> data = res.json()
 println(data.origin)  // the caller IP
 
 // POST with JSON body
 var<dict> body = {"name": "Omi", "version": 2}
-var<every> res2 = http.post("https://httpbin.org/post", body)
+var<http.req> res2 = http.post("https://httpbin.org/post", body)
 println(res2.status)
 
 // Custom headers
 var<dict> headers = {"Authorization": "Bearer mytoken"}
-var<every> res3 = http.get("https://api.example.com/data", headers)
+var<http.req> res3 = http.get("https://api.example.com/data", headers)
 var<dict> result = res3.json()
 
 // Download a file
 http.download("https://example.com/file.zip", "downloads/file.zip")
 
 // Generic request
-var<every> res4 = http.request("DELETE", "https://api.example.com/items/1")
+var<http.req> res4 = http.request("DELETE", "https://api.example.com/items/1")
 println(res4.status)
 ```
 
@@ -387,6 +413,8 @@ Module for text file operations: reading, writing, appending, and managing plain
 | `txt.exists(path<string>)` | `path`: `string` | Returns `true` if the file exists |
 | `txt.backup(path<string>)` | `path`: `string` | Creates a timestamped `.bak` copy; returns the backup path |
 
+Any `txt.*` call can be scheduled asynchronously with `async` at call site.
+
 ```js
 @import "omi:txt" as txt
 
@@ -394,7 +422,7 @@ Module for text file operations: reading, writing, appending, and managing plain
 txt.write("notes.txt", "Hello, Omi!\n")
 var<string> content = txt.read("notes.txt")
 println(content)
-```
+
 // Append a line
 txt.append("notes.txt", "Second line\n")
 
@@ -486,4 +514,51 @@ println(rx.match("foo 123 bar", "\\d+"))          // 123
 println(rx.find_all("cat bat sat", "[a-z]at"))    // ["cat", "bat", "sat"]
 println(rx.replace("2024-01-15", "-", "/"))       // 2024/01/15
 println(rx.split("one  two   three", "\\s+"))     // ["one", "two", "three"]
+```
+
+---
+
+## log
+
+Module for structured logging to stdout and files.
+
+```js
+@import "omi:log" as log
+```
+
+### Functions
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `log.debug([message<string>])` | `[message]`: `string`, optional, default `""` | Emits a DEBUG log |
+| `log.info([message<string>])` | `[message]`: `string`, optional, default `""` | Emits an INFO log |
+| `log.warning([message<string>])` | `[message]`: `string`, optional, default `""` | Emits a WARNING log |
+| `log.error([message<string>])` | `[message]`: `string`, optional, default `""` | Emits an ERROR log |
+| `log.critical([message<string>])` | `[message]`: `string`, optional, default `""` | Emits a CRITICAL log |
+| `log.set_level(level<string>)` | `level`: `string` | Sets level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) |
+| `log.set_file(path<string>, [mode<string>])` | `path`: `string`, `[mode]`: `string`, optional (`append` or `write`) | Enables file logging |
+| `log.rotate([max_size<string>], [backup_count<number>])` | `[max_size]`: `string` (for example `10MB`), `[backup_count]`: `number` | Enables rotating file logs |
+| `log.with_context(data<dict>)` | `data`: `dict` | Adds shared context fields to subsequent logs |
+| `log.json_mode()` | — | Switches output format to JSON |
+| `log.trace()` | — | Logs and returns current source location |
+
+```js
+@import "omi:log" as log
+
+log.set_level("DEBUG")
+log.debug("debug-msg")
+log.info("info-msg")
+log.with_context({"user_id": 42, "request_id": "req-1"})
+log.warning("warn-msg")
+
+log.set_file("tests/log_runtime.log", "write")
+log.error("error-msg")
+log.rotate(max_size="1KB", backup_count=2)
+log.critical("critical-msg")
+
+var<string> trace_loc = log.trace()
+println("TRACEVAL: " + trace_loc)
+
+log.json_mode()
+log.info("json-msg")
 ```

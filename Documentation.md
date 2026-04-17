@@ -36,11 +36,16 @@
   - [break and continue](#break-and-continue)
 - [Functions](#functions)
   - [Function Declaration](#function-declaration)
+  - [Async Functions](#async-functions)
+  - [Async Groups](#async-groups)
   - [Arrow Functions](#arrow-functions)
   - [return](#return)
   - [Default Arguments](#default-arguments)
   - [Keyword Arguments](#keyword-arguments)
   - [Functions as Arguments](#functions-as-arguments)
+- [Error Handling and Pattern Matching](#error-handling-and-pattern-matching)
+  - [try / catch / final](#try--catch--final)
+  - [match / case](#match--case)
 - [Arrays](#arrays)
   - [Typed Arrays](#typed-arrays)
   - [Size-Constrained Arrays](#size-constrained-arrays)
@@ -64,6 +69,11 @@
   - [The every Type](#the-every-type)
   - [Disabling Type Checking](#disabling-type-checking)
 - [Built-in Functions](#built-in-functions)
+  - [Input / Output](#input--output)
+  - [Type Checks](#type-checks)
+  - [List Utilities](#list-utilities)
+  - [Async Utilities](#async-utilities)
+  - [Other](#other)
 - [Directives](#directives)
   - [@import](#import)
   - [@use](#use)
@@ -386,6 +396,62 @@ greet("World")
 
 Use `void` as the return type when the function does not return a value:
 
+### Async Functions
+
+Use `async func` to declare asynchronous functions.
+
+```js
+async func<int> fetch_id(url<string>):
+  // schedule blocking I/O in background
+  var<future<every>> r = async http.get(url)
+  var<every> res = async r
+  return res.status
+end
+```
+
+Rules:
+- `async func<T>` returns `future<T>` when called.
+- `async name(...)` schedules execution and immediately returns `future<...>`.
+- `async <futureExpr>` is the await form (waits for completion and unwraps value).
+- `async <futureExpr>` is allowed only inside `async func`.
+- `async <nonFutureExpr>` raises a runtime error.
+- `@use noasync` disables async scheduling and await form for the file.
+
+### Async Groups
+
+Use named async groups to collect scheduled tasks and cancel them together.
+
+```js
+@import "omi:time" as t
+
+async workers(timeout: 0.25):
+  var<future<null>> a = async t.sleep(1)
+  var<future<null>> b = async t.sleep(1)
+end
+
+cancel(workers)
+```
+
+Rules:
+- Syntax: `async groupName:` or `async groupName(timeout: <number>):`.
+- Only the `timeout` parameter is currently supported.
+- Group body runs in async scope, so `async <futureExpr>` (await form) is valid inside.
+- `cancel(groupName)` cancels all futures collected by the group.
+- With `@use noasync`, group body executes synchronously and scheduling is disabled.
+
+Typical usage:
+
+```js
+async func<void> worker():
+  var<future<null>> t = async time.sleep(0.1)
+  async t
+  println("done")
+end
+
+async worker()      // fire-and-forget scheduling
+println("scheduled")
+```
+
 ### Arrow Functions
 
 Use `->` for compact single-expression functions. `end` is not required:
@@ -452,6 +518,61 @@ func<int> double(n<int>) -> n * 2
 
 func<int> apply(fn<call>, x<int>) -> fn(x)
 println(apply(double, 5))  // 10
+```
+
+---
+
+## Error Handling and Pattern Matching
+
+### try / catch / final
+
+Use `try` and `catch` to handle runtime errors without stopping the whole script.
+
+```js
+try:
+  var<int> x = 10 / 0
+catch err:
+  println("ERR: ~err.msg")
+end
+```
+
+Use `final` for cleanup code that must always run:
+
+```js
+try:
+  println("TRY")
+catch err:
+  println("CATCH")
+final:
+  println("ALWAYS")
+end
+```
+
+The `catch` variable is a dict-like error object with fields:
+- `type`
+- `msg`
+- `trace` (array of traceback lines)
+
+### match / case
+
+Use `match` for value/variant dispatch.
+
+```js
+match value:
+  case 0: println("zero")
+  case "ok": println("ok")
+  case _: println("fallback")
+end
+```
+
+Enum-style variant match with payload capture:
+
+```js
+match result:
+  case Ok(v): println(v)
+  case Err(e): println(e)
+  case _: println("unknown")
+end
 ```
 
 ---
@@ -1027,6 +1148,12 @@ All functions return `true` or `false`:
 | `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
 | `range(stop)` / `range(start, stop, [step])` | Returns an array of integers from `0` to `stop` (exclusive), or from `start` to `stop` with optional `step` (default `1`) |
 
+### Async Utilities
+
+| Function | Description |
+|---------|-------------|
+| `cancel(target)` | Cancels a `future` or an async group created with `async groupName: ... end` |
+
 ### Other
 
 | Function | Description |
@@ -1060,6 +1187,7 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:txt" as txt
 @import "omi:string" as str
 @import "omi:regex" as rx
+@import "omi:log" as log
 ```
 
 Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:
@@ -1097,6 +1225,7 @@ Enables or disables interpreter features for the current file:
 | `eval` | Enable the `eval()` built-in function |
 | `debug` | Enable debug mode |
 | `noecho` | Suppress `print()` / `println()` / `output()` output |
+| `noasync` | Disable async scheduling and await form in this file |
 | `module` | Mark this file as a module (required for user modules) |
 
 ```js
