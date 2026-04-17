@@ -97,8 +97,9 @@ Token types are defined in `src/var/token.py`:
 
 Keywords (`src/var/keyword.py`):
 ```
-var, and, or, is, isnt, if, elif, else, for, to, step,
-while, func, end, return, continue, break, import, as, use, set, type
+var, const, and, or, is, isnt, if, elif, else, try, catch,
+final, match, case, for, to, step, while, async, func, end,
+return, continue, break, import, as, use, set, type, enum, trait
 ```
 
 ### 3. Parser
@@ -346,7 +347,7 @@ Execution orchestration:
 
 ### src/stdlib/
 
-Seven built-in modules imported via `@import "omi:..."`. Each module creates a `Module` object backed by its own symbol table filled with `StdlibFunction` instances.
+Built-in modules are imported via `@import "omi:..."`. Each module creates a `Module` object backed by its own symbol table filled with `StdlibFunction` instances.
 
 | Module | Description |
 |--------|-------------|
@@ -357,13 +358,17 @@ Seven built-in modules imported via `@import "omi:..."`. Each module creates a `
 | `math` | Constants (`pi`, `e`, `inf`), math functions, random |
 | `json` | parse, stringify, read, write, append, exists |
 | `http` | get, post, put, patch, delete, request, download, upload |
+| `txt` | read, write, append, lines, write_lines, size, exists, backup |
+| `string` | split/join/replace/trim/pad/format and related helpers |
+| `regex` | test, match, find_all, replace, split |
+| `log` | structured logs, file logging, rotation, JSON mode, trace |
 
 ### src/var/
 
 Definitions and constants:
 - `token.py` — all `TT_*` token type strings and `TOKEN_DISPLAY_NAMES`
 - `keyword.py` — `KEYWORDS` list, `FILE_FORMAT`, `TYPE_LABELS`
-- `flags.py` — runtime feature flags (`notypes`, `debug`, `noecho`, `eval_enabled`)
+- `flags.py` — runtime feature flags (`notypes`, `debug`, `noecho`, `eval_enabled`, `noasync`)
 - `builtin.py` — `BUILTIN_MODULES` dict mapping `"omi:..."` to module factory functions
 
 ---

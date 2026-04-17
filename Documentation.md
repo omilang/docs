@@ -37,13 +37,14 @@
 - [Functions](#functions)
   - [Function Declaration](#function-declaration)
   - [Async Functions](#async-functions)
+  - [Async Groups](#async-groups)
   - [Arrow Functions](#arrow-functions)
   - [return](#return)
   - [Default Arguments](#default-arguments)
   - [Keyword Arguments](#keyword-arguments)
   - [Functions as Arguments](#functions-as-arguments)
 - [Error Handling and Pattern Matching](#error-handling-and-pattern-matching)
-  - [try / catch](#try--catch)
+  - [try / catch / final](#try--catch--final)
   - [match / case](#match--case)
 - [Arrays](#arrays)
   - [Typed Arrays](#typed-arrays)
@@ -68,6 +69,11 @@
   - [The every Type](#the-every-type)
   - [Disabling Type Checking](#disabling-type-checking)
 - [Built-in Functions](#built-in-functions)
+  - [Input / Output](#input--output)
+  - [Type Checks](#type-checks)
+  - [List Utilities](#list-utilities)
+  - [Async Utilities](#async-utilities)
+  - [Other](#other)
 - [Directives](#directives)
   - [@import](#import)
   - [@use](#use)
@@ -409,6 +415,29 @@ Rules:
 - `async <futureExpr>` is the await form (waits for completion and unwraps value).
 - `async <futureExpr>` is allowed only inside `async func`.
 - `async <nonFutureExpr>` raises a runtime error.
+- `@use noasync` disables async scheduling and await form for the file.
+
+### Async Groups
+
+Use named async groups to collect scheduled tasks and cancel them together.
+
+```js
+@import "omi:time" as t
+
+async workers(timeout: 0.25):
+  var<future<null>> a = async t.sleep(1)
+  var<future<null>> b = async t.sleep(1)
+end
+
+cancel(workers)
+```
+
+Rules:
+- Syntax: `async groupName:` or `async groupName(timeout: <number>):`.
+- Only the `timeout` parameter is currently supported.
+- Group body runs in async scope, so `async <futureExpr>` (await form) is valid inside.
+- `cancel(groupName)` cancels all futures collected by the group.
+- With `@use noasync`, group body executes synchronously and scheduling is disabled.
 
 Typical usage:
 
@@ -495,7 +524,7 @@ println(apply(double, 5))  // 10
 
 ## Error Handling and Pattern Matching
 
-### try / catch
+### try / catch / final
 
 Use `try` and `catch` to handle runtime errors without stopping the whole script.
 
@@ -504,6 +533,18 @@ try:
   var<int> x = 10 / 0
 catch err:
   println("ERR: ~err.msg")
+end
+```
+
+Use `final` for cleanup code that must always run:
+
+```js
+try:
+  println("TRY")
+catch err:
+  println("CATCH")
+final:
+  println("ALWAYS")
 end
 ```
 
@@ -1107,6 +1148,12 @@ All functions return `true` or `false`:
 | `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
 | `range(stop)` / `range(start, stop, [step])` | Returns an array of integers from `0` to `stop` (exclusive), or from `start` to `stop` with optional `step` (default `1`) |
 
+### Async Utilities
+
+| Function | Description |
+|---------|-------------|
+| `cancel(target)` | Cancels a `future` or an async group created with `async groupName: ... end` |
+
 ### Other
 
 | Function | Description |
@@ -1140,6 +1187,7 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:txt" as txt
 @import "omi:string" as str
 @import "omi:regex" as rx
+@import "omi:log" as log
 ```
 
 Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:
@@ -1177,6 +1225,7 @@ Enables or disables interpreter features for the current file:
 | `eval` | Enable the `eval()` built-in function |
 | `debug` | Enable debug mode |
 | `noecho` | Suppress `print()` / `println()` / `output()` output |
+| `noasync` | Disable async scheduling and await form in this file |
 | `module` | Mark this file as a module (required for user modules) |
 
 ```js
