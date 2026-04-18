@@ -8,6 +8,8 @@
 
 - [Documentation](Documentation.md) - syntax, types, functions, imports
 - [Modules (this page)](Modules.md) - built-in modules
+- [Linter](Linter.md) - static analysis, rules, config, and CLI
+- [Tests](Tests.md) - test syntax, runner flags, and reports
 - [Architecture](Architecture.md) - project structure and interpreter internals
 
 ---
@@ -25,6 +27,7 @@
 - [txt](#txt)
 - [string](#string)
 - [regex](#regex)
+- [python](#python)
 - [log](#log)
 
 ---
@@ -515,6 +518,88 @@ println(rx.find_all("cat bat sat", "[a-z]at"))    // ["cat", "bat", "sat"]
 println(rx.replace("2024-01-15", "-", "/"))       // 2024/01/15
 println(rx.split("one  two   three", "\\s+"))     // ["one", "two", "three"]
 ```
+
+---
+
+## python
+
+Bridge module to call Python standard-library or installed modules from Omi.
+
+```js
+@import "omi:python" as py
+```
+
+### Exported type alias
+
+| Alias | Runtime meaning |
+|------|------------------|
+| `py.lib` | Python module/object wrapper type (`pylib`) |
+
+### Functions
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `py.import(name<string>)` | `name`: `string` | Imports a Python module and returns `py.lib` |
+| `py.call(lib<py.lib>, member<string>, ...args<every>)` | `lib`: `py.lib`, `member`: `string`, `...args`: any | Calls Python member by name and converts values between Omi/Python |
+| `py.eval(code<string>)` | `code`: `string` | Executes/evaluates Python code string and returns converted result |
+
+### Type usage
+
+```js
+@import "omi:python" as py
+
+var<py.lib> math = py.import("math")
+var<number> pi = py.call(math, "pi")
+println(pi)
+```
+
+### Examples
+
+```js
+@import "omi:python" as py
+
+// Import Python module
+var<py.lib> math = py.import("math")
+
+// Call module function
+var<number> root = py.call(math, "sqrt", 81)
+println(root)  // 9
+
+// Access constant via call
+var<number> pi = py.call(math, "pi")
+println(pi)
+
+// Evaluate Python expression
+var<number> n = py.eval("sum([1, 2, 3, 4])")
+println(n)  // 10
+```
+
+### Conversion behavior
+
+Omi -> Python conversion:
+
+- `int/float` -> Python numeric
+- `bool` -> Python bool
+- `string` -> Python str
+- `array` -> Python list
+- `dict` -> Python dict
+- `null` -> `None`
+
+Python -> Omi conversion:
+
+- Python numeric -> `number`
+- Python bool -> `bool`
+- Python str -> `string`
+- Python list/tuple -> `array`
+- Python dict -> `dict`
+- Python `None` -> `null`
+- Other Python objects -> wrapped as `py.lib`
+
+### Notes and safety
+
+- `py.eval` executes arbitrary Python code. Do not run untrusted input.
+- `py.call` returns runtime errors when member is missing or not callable (when args are provided).
+- Python-side exceptions are surfaced as Omi runtime errors.
 
 ---
 

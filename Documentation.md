@@ -8,6 +8,8 @@
 
 - [Documentation (this page)](Documentation.md) - syntax, types, functions, imports
 - [Modules](Modules.md) - built-in modules
+- [Linter](Linter.md) - static analysis, rules, config, and CLI
+- [Tests](Tests.md) - test syntax, runner flags, and reports
 - [Architecture](Architecture.md) - project layout and interpreter internals
 
 ---
@@ -1227,11 +1229,33 @@ Enables or disables interpreter features for the current file:
 | `noecho` | Suppress `print()` / `println()` / `output()` output |
 | `noasync` | Disable async scheduling and await form in this file |
 | `module` | Mark this file as a module (required for user modules) |
+| `json` | Alias for CLI `--json` in `lint` / `test` flows |
+| `fix` | Alias for CLI `--fix` in `lint` flows |
+| `failfast` | Alias for CLI `--failfast` in `lint` / `test` flows |
+| `level` | Alias for CLI `--level=<...>` in `lint` flows |
+| `rules` | Alias for CLI `--rules=<...>` in `lint` flows |
+| `config` | Alias for CLI `--config[=path]` in `lint` flows |
+| `save` | Alias for CLI `--save[=path]` in `test` flows (`.test.omi` only) |
+
+Forms:
+
+- no-value flags: `@use <flag>`
+- value flags: `@use level as <value>`, `@use rules as <value>`
+- optional value flags: `@use config`, `@use config as <path>`, `@use save`, `@use save as <path>`
 
 ```js
 @use eval
 @use debug
+@use json
+@use fix
+@use failfast
+@use level as error
+@use rules as "undefined-var,unused-var"
+@use config
+@use config as "./.omilint"
 ```
+
+`@use save` is valid only in `.test.omi` files. Using it in a regular `.omi` file raises a runtime error.
 
 ### @set
 
