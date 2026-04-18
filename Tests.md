@@ -19,7 +19,7 @@
 Omi includes a native test DSL for files with `.test.omi` extension and a built-in runner:
 
 ```bash
-python shell.py test <file.test.omi|directory> [flags]
+omi test <file.test.omi|directory> [flags]
 ```
 
 The runner supports:
@@ -138,7 +138,7 @@ Expectation fails when expression is falsy.
 ## CLI Flags
 
 ```bash
-python shell.py test <target> [--failfast] [--json] [--save[=path]]
+omi test <target> [--failfast] [--json] [--save[=path]]
 ```
 
 Directive aliases for `.test.omi` files:
@@ -174,11 +174,11 @@ Behavior:
 Examples:
 
 ```bash
-python shell.py test tests
-python shell.py test tests --failfast
-python shell.py test tests --json
-python shell.py test tests --json --save=tests-report.json
-python shell.py test tests/api --save
+omi test tests
+omi test tests --failfast
+omi test tests --json
+omi test tests --json --save=tests-report.json
+omi test tests/api --save
 ```
 
 ---
@@ -212,19 +212,19 @@ Contains per-file results:
 ### Local development
 
 ```bash
-python shell.py test tests
+omi test tests
 ```
 
 ### Debugging a failing subset
 
 ```bash
-python shell.py test tests/auth --failfast
+omi test tests/auth --failfast
 ```
 
 ### CI mode
 
 ```bash
-python shell.py test tests --json --save=test-report.json
+omi test tests --json --save=test-report.json
 ```
 
 ---
@@ -234,13 +234,13 @@ python shell.py test tests --json --save=test-report.json
 A practical strict pipeline:
 
 ```bash
-python shell.py lint src --level=error
-python shell.py test tests --failfast
+omi lint src --level=error
+omi test tests --failfast
 ```
 
 Or machine-readable artifacts:
 
 ```bash
-python shell.py lint src --json --level=error
-python shell.py test tests --json --save=test-report.json
+omi lint src --json --level=error
+omi test tests --json --save=test-report.json
 ```
