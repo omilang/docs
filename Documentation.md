@@ -1355,13 +1355,13 @@ println(result)  // 15
 Start the interactive shell (REPL):
 
 ```
-python shell.py
+omi
 ```
 
 Run a script file:
 
 ```
-python shell.py run filename.omi
+omi run filename.omi
 ```
 
 Flags:
