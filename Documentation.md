@@ -1366,8 +1366,39 @@ omi run filename.omi
 
 Flags:
 
+### Main Flags
+
 | Flag | Description |
 |------|-------------|
 | `--version` or `-v` | Print the Omi version and exit |
-| `--help` or `-h` | Show help and links, then exit |
+| `--help` or `-h` | Show this help message and exit |
 | `--debug` or `-d` | Print the parsed AST result after execution |
+
+### Lint Flags
+
+| Flag | Description |
+|------|-------------|
+| `--fix` | Apply auto-fixes when possible |
+| `--json` | Print lint report as JSON |
+| `--failfast` | Stop after lint errors when used with run --lint |
+| `--level=<name>` | Filter by severity level |
+| `--rules=<list>` | Comma-separated list of rule names |
+| `--config[=path]` | Load lint config from `.omilint` or the provided path |
+
+### Test Flags
+
+| Flag | Description |
+|------|-------------|
+| `--failfast` | Stop after first failed test |
+| `--json` | Print test report as JSON |
+| `--save[=path]` | Save JSON report to file |
+
+### Usage Examples
+
+```
+omi run file.omi --debug          # Run with debug output
+omi lint file.omi --fix           # Lint and apply auto-fixes
+omi test test.omi --json          # Run tests with JSON output
+omi test test.omi --save          # Run tests and save report
+omi lint . --rules="unused-var"   # Lint directory with specific rules
+```
