@@ -100,7 +100,7 @@ Token types are defined in `src/var/token.py`:
 Keywords (`src/var/keyword.py`):
 ```
 var, const, and, or, is, isnt, if, elif, else, try, catch,
-final, match, case, for, to, step, while, async, func, end,
+final, match, case, for, to, step, while, async, defer, func, end,
 return, continue, break, import, as, use, set, type, enum, trait
 ```
 
@@ -157,6 +157,7 @@ AST node classes are in `src/nodes/`:
 | `TryNode` | `control/flow.py` | `try` block |
 | `MatchNode` | `control/flow.py` | `match` expression |
 | `CaseNode` | `control/flow.py` | `case` branch |
+| `DeferNode` | `control/flow.py` | `defer` cleanup statement |
 | `ReturnNode` | `jump/returnN.py` | `return` |
 | `BreakNode` | `jump/breakN.py` | `break` |
 | `ContinueNode` | `jump/continueN.py` | `continue` |
@@ -200,6 +201,7 @@ Runtime values are in `src/values/`:
 | `String` | Text values |
 | `List` | Arrays, with optional `elem_annotation` and `max_size` |
 | `Dict` | Key-value store with `get_member(name)` |
+| `FileHandleValue` | Open-file descriptor wrapper for `file_handle` |
 | `Boolean` | `true` / `false` |
 | `Null` | Explicit null value |
 | `Void` | Absence of value (from bare `return`) |
@@ -266,7 +268,8 @@ Omi/
 │   │   │   ├── boolean.py
 │   │   │   ├── null.py
 │   │   │   ├── void.py         # Void + Uninitialized
-│   │   │   └── module.py       # Module (wraps symbol table)
+│   │   │   ├── module.py       # Module (wraps symbol table)
+│   │   │   └── filehandle.py   # file_handle runtime value
 │   │   └── function/
 │   │       ├── base.py         # BaseFunction
 │   │       ├── function.py     # User-defined Function
@@ -291,6 +294,7 @@ Omi/
 │   ├── stdlib/                 # Standard library modules
 │   │   ├── system.py
 │   │   ├── files.py
+│   │   ├── color.py
 │   │   ├── paths.py
 │   │   ├── time.py
 │   │   ├── math.py
@@ -301,7 +305,8 @@ Omi/
 │       ├── token.py            # TT_* token type constants
 │       ├── keyword.py          # KEYWORDS list, FILE_FORMAT, TYPE_LABELS
 │       ├── constant.py         # DIGITS, LETTERS, LETTERS_DIGITS
-│       ├── flags.py            # Runtime flags: notypes, debug, noecho, eval_enabled
+│       ├── flags.py            # Runtime flags: notypes, debug, noecho, eval_enabled, no_colors
+│       ├── ansi.py             # ANSI code map + terminal capability helpers
 │       └── builtin.py          # BUILTIN_MODULES registry
 │
 ├── tests/                      # Test .omi files
@@ -354,7 +359,8 @@ Built-in modules are imported via `@import "omi:..."`. Each module creates a `Mo
 | Module | Description |
 |--------|-------------|
 | `system` | OS commands, env vars, platform, exit |
-| `files` | mkdir, rm, rmdir, list, cp, mv, read, write, exists |
+| `files` | cwd/mkdir/rm/rmdir/list/cp/mv plus low-level open/close/read/write via `file_handle` |
+| `color` | ANSI foreground/background/styles, RGB helpers, presets, and global color toggles |
 | `paths` | join, abs, exists, ext, name |
 | `time` | now, format, parse, sleep, timezone |
 | `math` | Constants (`pi`, `e`, `inf`), math functions, random |
@@ -370,7 +376,8 @@ Built-in modules are imported via `@import "omi:..."`. Each module creates a `Mo
 Definitions and constants:
 - `token.py` — all `TT_*` token type strings and `TOKEN_DISPLAY_NAMES`
 - `keyword.py` — `KEYWORDS` list, `FILE_FORMAT`, `TYPE_LABELS`
-- `flags.py` — runtime feature flags (`notypes`, `debug`, `noecho`, `eval_enabled`, `noasync`)
+- `flags.py` — runtime feature flags (`notypes`, `debug`, `noecho`, `eval_enabled`, `noasync`, `no_colors`)
+- `ansi.py` — shared ANSI constants and capability checks used by error/lint/test/log output
 - `builtin.py` — `BUILTIN_MODULES` dict mapping `"omi:..."` to module factory functions
 
 ---

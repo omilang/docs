@@ -27,6 +27,7 @@
 - [txt](#txt)
 - [string](#string)
 - [regex](#regex)
+- [color](#color)
 - [python](#python)
 - [log](#log)
 
@@ -133,6 +134,10 @@ Module for file system operations: create/remove files and directories, copy, mo
 | `fs.list([path<string>])` | `[path]`: `string`, optional, default `"."` | Returns directory entries as `list<string>` |
 | `fs.cp(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Copies a file or directory |
 | `fs.mv(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Moves or renames a file/directory |
+| `fs.open(path<string>, [mode<string>])` | `path`: `string`, `[mode]`: `string`, optional, default `"r"` | Opens a file and returns `file_handle` |
+| `fs.close(handle<file_handle>)` | `handle`: `file_handle` | Closes file handle (idempotent) |
+| `fs.read(handle<file_handle>, [count<number>])` | `handle`: `file_handle`, `[count]`: `number`, optional, default `-1` | Reads file content from open handle |
+| `fs.write(handle<file_handle>, data<string>)` | `handle`: `file_handle`, `data`: `string` | Writes text to open handle; returns bytes/chars written |
 
 ```js
 @import "omi:files" as fs
@@ -144,6 +149,11 @@ var<list> entries = fs.list()
 println(entries)
 fs.rm("out/main.omi")
 fs.rmdir("out")
+
+var<file_handle> h = fs.open("out/log.txt", "w")
+fs.write(h, "hello")
+fs.close(h)
+fs.close(h) // safe: no-op
 ```
 
 ---
@@ -603,6 +613,56 @@ Python -> Omi conversion:
 
 ---
 
+## color
+
+Module for ANSI color/style output and terminal color control.
+
+```js
+@import "omi:color" as colors
+```
+
+### Color functions
+
+`colors.red/green/yellow/blue/magenta/cyan/white/black(text<string>) -> string`
+
+### Background functions
+
+`colors.bg_red/bg_green/bg_yellow/bg_blue/bg_magenta/bg_cyan/bg_white/bg_black(text<string>) -> string`
+
+### Style functions
+
+`colors.bold/dim/italic/underline/blink/reverse/hidden/strikethrough(text<string>) -> string`
+
+### Utilities
+
+| Function | Description |
+|---------|-------------|
+| `colors.reset(text<string>)` | Appends reset code after text |
+| `colors.clear()` | Clears terminal (when ANSI is enabled) |
+| `colors.enable()` | Enables colors globally |
+| `colors.disable()` | Disables colors globally |
+| `colors.rgb(text<string>, r<number>, g<number>, b<number>)` | Applies RGB foreground color |
+| `colors.bg_rgb(text<string>, r<number>, g<number>, b<number>)` | Applies RGB background color |
+| `colors.supported` | `bool` constant: terminal ANSI support |
+
+### Presets
+
+`colors.success/error/warning/info/question(text<string>) -> string`
+
+### Constants
+
+Uppercase constants for concatenation are exported (`RED`, `GREEN`, `RESET`, `BOLD`, `BG_BLUE`, etc.).
+
+```js
+@import "omi:color" as colors
+
+println(colors.red("Error!"))
+println(colors.success("Done"))
+print(colors.RED + "Error" + colors.RESET)
+```
+
+---
+
 ## log
 
 Module for structured logging to stdout and files.
@@ -626,6 +686,10 @@ Module for structured logging to stdout and files.
 | `log.with_context(data<dict>)` | `data`: `dict` | Adds shared context fields to subsequent logs |
 | `log.json_mode()` | — | Switches output format to JSON |
 | `log.trace()` | — | Logs and returns current source location |
+
+Notes:
+- Log level labels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) are colorized in terminal output.
+- Use CLI `--nocolors` (or `colors.disable()`) to disable ANSI output globally.
 
 ```js
 @import "omi:log" as log
