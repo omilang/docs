@@ -160,7 +160,6 @@ Rules:
 | `array` | `[1, 2, 3]` | Ordered collection |
 | `dict` | `{"key": value}` | Key-value mapping |
 | `future<T>` | `future<int>` | Async result placeholder returned by `async func` calls |
-| `file_handle` | `fs.open("a.txt", "r")` | Low-level opened file handle from `omi:files` |
 | `null` | `null` | An explicit null value |
 | `void` | — | Absence of any return value (functions only) |
 
@@ -392,7 +391,7 @@ Deferred statements run in LIFO order when the scope exits (normal end, `return`
 @import "omi:files" as fs
 
 func<string> read_once(path<string>):
-  var<file_handle> h = fs.open(path, "r")
+  var<fs.handle> h = fs.open(path, "r")
   defer fs.close(h)
   return fs.read(h)
 end
