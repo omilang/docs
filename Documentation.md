@@ -36,6 +36,7 @@
   - [for](#for-loop)
   - [while](#while-loop)
   - [break and continue](#break-and-continue)
+  - [defer](#defer)
 - [Functions](#functions)
   - [Function Declaration](#function-declaration)
   - [Async Functions](#async-functions)
@@ -158,6 +159,7 @@ Rules:
 | `string` | `"hello"` | Text in double quotes |
 | `array` | `[1, 2, 3]` | Ordered collection |
 | `dict` | `{"key": value}` | Key-value mapping |
+| `future<T>` | `future<int>` | Async result placeholder returned by `async func` calls |
 | `null` | `null` | An explicit null value |
 | `void` | — | Absence of any return value (functions only) |
 
@@ -379,6 +381,27 @@ end
 ```
 
 Output: `0`, `1`, `2`, `4`
+
+### defer
+
+Use `defer` to register cleanup work for the current lexical scope.
+Deferred statements run in LIFO order when the scope exits (normal end, `return`, `break`, `continue`, or runtime exception):
+
+```js
+@import "omi:files" as fs
+
+func<string> read_once(path<string>):
+  var<fs.handle> h = fs.open(path, "r")
+  defer fs.close(h)
+  return fs.read(h)
+end
+```
+
+Notes:
+- `defer` belongs to the current scope (`func`, loop body, block).
+- Multiple `defer` statements execute in reverse registration order.
+- Inside loops, deferred calls execute when the loop scope exits.
+- `defer` works inside `try/catch` and inside `async func`.
 
 ---
 
@@ -1190,6 +1213,7 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:string" as str
 @import "omi:regex" as rx
 @import "omi:log" as log
+@import "omi:color" as color
 ```
 
 Built-in modules use the `omi:` prefix. User files are imported by relative path without extension:
@@ -1373,6 +1397,7 @@ Flags:
 | `--version` or `-v` | Print the Omi version and exit |
 | `--help` or `-h` | Show this help message and exit |
 | `--debug` or `-d` | Print the parsed AST result after execution |
+| `--nocolors` | Disable ANSI colors globally (errors, lint, tests, logs, and `omi:color`) |
 
 ### Lint Flags
 

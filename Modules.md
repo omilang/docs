@@ -27,6 +27,7 @@
 - [txt](#txt)
 - [string](#string)
 - [regex](#regex)
+- [color](#color)
 - [python](#python)
 - [log](#log)
 
@@ -124,6 +125,14 @@ Module for file system operations: create/remove files and directories, copy, mo
 @import "omi:files" as fs
 ```
 
+### Exported type alias
+
+| Alias | Runtime meaning |
+|------|------------------|
+| `fs.handle` | For close/read/write files
+
+### Functions
+
 | Function | Accepted arguments | Description |
 |---------|---------------------|-------------|
 | `fs.cwd()` | — | Returns the current working directory |
@@ -133,6 +142,10 @@ Module for file system operations: create/remove files and directories, copy, mo
 | `fs.list([path<string>])` | `[path]`: `string`, optional, default `"."` | Returns directory entries as `list<string>` |
 | `fs.cp(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Copies a file or directory |
 | `fs.mv(src<string>, dst<string>)` | `src`: `string`, `dst`: `string` | Moves or renames a file/directory |
+| `fs.open(path<string>, [mode<string>])` | `path`: `string`, `[mode]`: `string`, optional, default `"r"` | Opens a file and returns `fs.handle` |
+| `fs.close(handle<fs.handle>)` | `handle`: `fs.handle` | Closes file handle (idempotent) |
+| `fs.read(handle<fs.handle>, [count<int>])` | `handle`: `fs.handle`, `[count]`: `int`, optional, default `-1` | Reads file content from open handle |
+| `fs.write(handle<fs.handle>, data<string>)` | `handle`: `fs.handle`, `data`: `string` | Writes text to open handle; returns bytes/chars written |
 
 ```js
 @import "omi:files" as fs
@@ -144,6 +157,11 @@ var<list> entries = fs.list()
 println(entries)
 fs.rm("out/main.omi")
 fs.rmdir("out")
+
+var<fs.handle> h = fs.open("out/log.txt", "w")
+fs.write(h, "hello")
+fs.close(h)
+fs.close(h) // safe: no-op
 ```
 
 ---
@@ -213,11 +231,11 @@ Module for time operations: current time, formatting, parsing, sleeping.
 ```js
 @import "omi:time" as t
 
-var<number> ts = t.now()
+var<int> ts = t.now()
 println(t.format(ts))
 println(t.format(ts, "%d/%m/%Y"))
 
-var<number> ts2 = t.parse("2026-01-01 00:00:00")
+var<int> ts2 = t.parse("2026-01-01 00:00:00")
 println(ts2)
 
 println(t.timezone())
@@ -246,18 +264,18 @@ Module for mathematical operations. Includes constants and functions.
 
 | Function | Accepted arguments | Description |
 |---------|---------------------|-------------|
-| `m.abs(n<number>)` | `n`: `number` | Absolute value |
-| `m.round(n<number>)` | `n`: `number` | Rounds to the nearest integer |
-| `m.floor(n<number>)` | `n`: `number` | Rounds down |
-| `m.ceil(n<number>)` | `n`: `number` | Rounds up |
-| `m.sqrt(n<number>)` | `n`: `number` | Square root |
-| `m.log(n<number>, [base<number>])` | `n`: `number`, `[base]`: `number`, optional | Logarithm; if `base` is omitted, natural logarithm is used |
-| `m.exp(n<number>)` | `n`: `number` | Exponential (`e^n`) |
-| `m.min(lst<list<number>>)` | `lst`: `list<number>` | Minimum value from a list of numbers |
-| `m.max(lst<list<number>>)` | `lst`: `list<number>` | Maximum value from a list of numbers |
+| `m.abs(n<int|float>)` | `n`: `int` or `float` | Absolute value |
+| `m.round(n<int|float>)` | `n`: `int` or `float` | Rounds to the nearest integer |
+| `m.floor(n<int|float>)` | `n`: `int` or `float` | Rounds down |
+| `m.ceil(n<int|float>)` | `n`: `int` or `float` | Rounds up |
+| `m.sqrt(n<int|float>)` | `n`: `int` or `float` | Square root |
+| `m.log(n<int|float>, [base<int|float>])` | `n`: `int` or `float`, `[base]`: `int` or `float`, optional | Logarithm; if `base` is omitted, natural logarithm is used |
+| `m.exp(n<int|float>)` | `n`: `int` or `float` | Exponential (`e^n`) |
+| `m.min(lst<list<int|float>>)` | `lst`: `list` of numbers | Minimum value from a list of numbers |
+| `m.max(lst<list<int|float>>)` | `lst`: `list` of numbers | Maximum value from a list of numbers |
 | `m.random()` | — | Random float in `[0.0, 1.0)` |
-| `m.randint(a<number>, b<number>)` | `a`: `number`, `b`: `number` | Random integer in `[a, b]` inclusive |
-| `m.randfloat(a<number>, b<number>, [digits<number>])` | `a`: `number`, `b`: `number`, `[digits]`: `number`, optional | Random float; `digits` controls decimal precision when provided |
+| `m.randint(a<int|float>, b<int|float>)` | `a`: `int` or `float`, `b`: `int` or `float` | Random integer in `[a, b]` inclusive |
+| `m.randfloat(a<int|float>, b<int|float>, [digits<int>])` | `a`: `int` or `float`, `b`: `int` or `float`, `[digits]`: `int`, optional | Random float; `digits` controls decimal precision when provided |
 | `m.choice(lst<list>)` | `lst`: `list` | Random item from a list |
 
 ```js
@@ -289,13 +307,13 @@ Module for JSON encoding, decoding, and file operations.
 | Function | Accepted arguments | Description |
 |---------|---------------------|-------------|
 | `json.parse(text<string>)` | `text`: `string` | Parses a JSON string into an Omi value |
-| `json.stringify(value<every>, [indent<number>])` | `value`: `every`, `[indent]`: `number`, optional | Serializes a value to JSON; `indent` enables pretty-print formatting |
+| `json.stringify(value<every>, [indent<int>])` | `value`: `every`, `[indent]`: `int`, optional | Serializes a value to JSON; `indent` enables pretty-print formatting |
 | `json.read(path<string>)` | `path`: `string` | Reads and parses a JSON file |
-| `json.write(path<string>, value<every>, [indent<number>])` | `path`: `string`, `value`: `every`, `[indent]`: `number`, optional | Writes a value to a JSON file |
+| `json.write(path<string>, value<every>, [indent<int>])` | `path`: `string`, `value`: `every`, `[indent]`: `int`, optional | Writes a value to a JSON file |
 | `json.append(path<string>, value<every>)` | `path`: `string`, `value`: `every` | Appends a value to a JSON array file |
 | `json.exists(path<string>)` | `path`: `string` | Returns `true` if the file exists |
 
-`json.parse` returns a `dict`, `list`, number, string, or boolean depending on the JSON content.
+`json.parse` returns a `dict`, `list`, `int`, `float`, string, or boolean depending on the JSON content.
 Dict fields are accessed with dot notation.
 
 ```js
@@ -534,6 +552,7 @@ Bridge module to call Python standard-library or installed modules from Omi.
 | Alias | Runtime meaning |
 |------|------------------|
 | `py.lib` | Python module/object wrapper type (`pylib`) |
+| `py.number` | Union of `int` and `float` (`int | float`) |
 
 ### Functions
 
@@ -549,7 +568,7 @@ Bridge module to call Python standard-library or installed modules from Omi.
 @import "omi:python" as py
 
 var<py.lib> math = py.import("math")
-var<number> pi = py.call(math, "pi")
+var<py.number> pi = py.call(math, "pi")
 println(pi)
 ```
 
@@ -562,15 +581,15 @@ println(pi)
 var<py.lib> math = py.import("math")
 
 // Call module function
-var<number> root = py.call(math, "sqrt", 81)
+var<py.number> root = py.call(math, "sqrt", 81)
 println(root)  // 9
 
 // Access constant via call
-var<number> pi = py.call(math, "pi")
+var<py.number> pi = py.call(math, "pi")
 println(pi)
 
 // Evaluate Python expression
-var<number> n = py.eval("sum([1, 2, 3, 4])")
+var<py.number> n = py.eval("sum([1, 2, 3, 4])")
 println(n)  // 10
 ```
 
@@ -587,7 +606,7 @@ Omi -> Python conversion:
 
 Python -> Omi conversion:
 
-- Python numeric -> `number`
+- Python numeric -> `int` or `float` (not `py.number`)
 - Python bool -> `bool`
 - Python str -> `string`
 - Python list/tuple -> `array`
@@ -600,6 +619,56 @@ Python -> Omi conversion:
 - `py.eval` executes arbitrary Python code. Do not run untrusted input.
 - `py.call` returns runtime errors when member is missing or not callable (when args are provided).
 - Python-side exceptions are surfaced as Omi runtime errors.
+
+---
+
+## color
+
+Module for ANSI color/style output and terminal color control.
+
+```js
+@import "omi:color" as colors
+```
+
+### Color functions
+
+`colors.red/green/yellow/blue/magenta/cyan/white/black(text<string>) -> string`
+
+### Background functions
+
+`colors.bg_red/bg_green/bg_yellow/bg_blue/bg_magenta/bg_cyan/bg_white/bg_black(text<string>) -> string`
+
+### Style functions
+
+`colors.bold/dim/italic/underline/blink/reverse/hidden/strikethrough(text<string>) -> string`
+
+### Utilities
+
+| Function | Description |
+|---------|-------------|
+| `colors.reset(text<string>)` | Appends reset code after text |
+| `colors.clear()` | Clears terminal (when ANSI is enabled) |
+| `colors.enable()` | Enables colors globally |
+| `colors.disable()` | Disables colors globally |
+| `colors.rgb(text<string>, r<number>, g<number>, b<number>)` | Applies RGB foreground color |
+| `colors.bg_rgb(text<string>, r<number>, g<number>, b<number>)` | Applies RGB background color |
+| `colors.supported` | `bool` constant: terminal ANSI support |
+
+### Presets
+
+`colors.success/error/warning/info/question(text<string>) -> string`
+
+### Constants
+
+Uppercase constants for concatenation are exported (`RED`, `GREEN`, `RESET`, `BOLD`, `BG_BLUE`, etc.).
+
+```js
+@import "omi:color" as colors
+
+println(colors.red("Error!"))
+println(colors.success("Done"))
+print(colors.RED + "Error" + colors.RESET)
+```
 
 ---
 
@@ -626,6 +695,10 @@ Module for structured logging to stdout and files.
 | `log.with_context(data<dict>)` | `data`: `dict` | Adds shared context fields to subsequent logs |
 | `log.json_mode()` | — | Switches output format to JSON |
 | `log.trace()` | — | Logs and returns current source location |
+
+Notes:
+- Log level labels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) are colorized in terminal output.
+- Use CLI `--nocolors` (or `colors.disable()`) to disable ANSI output globally.
 
 ```js
 @import "omi:log" as log

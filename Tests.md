@@ -138,7 +138,7 @@ Expectation fails when expression is falsy.
 ## CLI Flags
 
 ```bash
-omi test <target> [--failfast] [--json] [--save[=path]]
+omi test <target> [--failfast] [--json] [--save[=path]] [--nocolors]
 ```
 
 Directive aliases for `.test.omi` files:
@@ -170,6 +170,10 @@ Behavior:
 - `--save` with single file target: auto-name from test file
 - `--save` with directory target: `<directory>-test.json`
 - `--save` with multi-file context: fallback consolidated filename
+
+### `--nocolors`
+
+Disables ANSI colors in textual test output.
 
 Examples:
 

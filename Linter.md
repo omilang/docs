@@ -45,6 +45,7 @@ Supported flags:
 
 - `--fix`: apply auto-fix operations for fixable rules
 - `--json`: print machine-readable JSON report
+- `--nocolors`: disable ANSI coloring in lint/error output
 - `--failfast`: in lint mode affects exit strategy when errors are present
 - `--level=<error|warning|style|security>`: minimum severity to include
 - `--rules=<rule1,rule2,...>`: only include selected rules
