@@ -8,6 +8,8 @@
 
 - [Documentation](Documentation.md) - syntax, types, functions, imports
 - [Modules](Modules.md) - built-in modules
+- [Linter](Linter.md) - static analysis, rules, config, and CLI
+- [Tests](Tests.md) - test syntax, runner flags, and reports
 - [Architecture (this page)](Architecture.md) - project structure and interpreter internals
 
 ---

@@ -8,6 +8,8 @@
 
 - [Documentation (this page)](Documentation.md) - syntax, types, functions, imports
 - [Modules](Modules.md) - built-in modules
+- [Linter](Linter.md) - static analysis, rules, config, and CLI
+- [Tests](Tests.md) - test syntax, runner flags, and reports
 - [Architecture](Architecture.md) - project layout and interpreter internals
 
 ---
@@ -1227,11 +1229,33 @@ Enables or disables interpreter features for the current file:
 | `noecho` | Suppress `print()` / `println()` / `output()` output |
 | `noasync` | Disable async scheduling and await form in this file |
 | `module` | Mark this file as a module (required for user modules) |
+| `json` | Alias for CLI `--json` in `lint` / `test` flows |
+| `fix` | Alias for CLI `--fix` in `lint` flows |
+| `failfast` | Alias for CLI `--failfast` in `lint` / `test` flows |
+| `level` | Alias for CLI `--level=<...>` in `lint` flows |
+| `rules` | Alias for CLI `--rules=<...>` in `lint` flows |
+| `config` | Alias for CLI `--config[=path]` in `lint` flows |
+| `save` | Alias for CLI `--save[=path]` in `test` flows (`.test.omi` only) |
+
+Forms:
+
+- no-value flags: `@use <flag>`
+- value flags: `@use level as <value>`, `@use rules as <value>`
+- optional value flags: `@use config`, `@use config as <path>`, `@use save`, `@use save as <path>`
 
 ```js
 @use eval
 @use debug
+@use json
+@use fix
+@use failfast
+@use level as error
+@use rules as "undefined-var,unused-var"
+@use config
+@use config as "./.omilint"
 ```
+
+`@use save` is valid only in `.test.omi` files. Using it in a regular `.omi` file raises a runtime error.
 
 ### @set
 
@@ -1331,19 +1355,50 @@ println(result)  // 15
 Start the interactive shell (REPL):
 
 ```
-python shell.py
+omi
 ```
 
 Run a script file:
 
 ```
-python shell.py run filename.omi
+omi run filename.omi
 ```
 
 Flags:
 
+### Main Flags
+
 | Flag | Description |
 |------|-------------|
 | `--version` or `-v` | Print the Omi version and exit |
-| `--help` or `-h` | Show help and links, then exit |
+| `--help` or `-h` | Show this help message and exit |
 | `--debug` or `-d` | Print the parsed AST result after execution |
+
+### Lint Flags
+
+| Flag | Description |
+|------|-------------|
+| `--fix` | Apply auto-fixes when possible |
+| `--json` | Print lint report as JSON |
+| `--failfast` | Stop after lint errors when used with run --lint |
+| `--level=<name>` | Filter by severity level |
+| `--rules=<list>` | Comma-separated list of rule names |
+| `--config[=path]` | Load lint config from `.omilint` or the provided path |
+
+### Test Flags
+
+| Flag | Description |
+|------|-------------|
+| `--failfast` | Stop after first failed test |
+| `--json` | Print test report as JSON |
+| `--save[=path]` | Save JSON report to file |
+
+### Usage Examples
+
+```
+omi run file.omi --debug          # Run with debug output
+omi lint file.omi --fix           # Lint and apply auto-fixes
+omi test test.omi --json          # Run tests with JSON output
+omi test test.omi --save          # Run tests and save report
+omi lint . --rules="unused-var"   # Lint directory with specific rules
+```
