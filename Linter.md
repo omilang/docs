@@ -28,8 +28,8 @@ It performs:
 
 The linter is available in two modes:
 
-- standalone command: `python shell.py lint <path>`
-- pre-run check: `python shell.py run <file.omi> --lint`
+- standalone command: `omi lint <path>`
+- pre-run check: `omi run <file.omi>` runs lint by default
 
 ---
 
@@ -38,7 +38,7 @@ The linter is available in two modes:
 ### 1) Standalone lint mode
 
 ```bash
-python shell.py lint <file.omi|directory> [flags]
+omi lint <file.omi|directory> [flags]
 ```
 
 Supported flags:
@@ -54,17 +54,17 @@ Supported flags:
 Examples:
 
 ```bash
-python shell.py lint src
-python shell.py lint tests/test_features.omi --json
-python shell.py lint tests --rules=undefined-var,unused-var
-python shell.py lint example.omi --level=error
-python shell.py lint src --fix --config=.
+omi lint src
+omi lint tests/test_features.omi --json
+omi lint tests --rules=undefined-var,unused-var
+omi lint example.omi --level=error
+omi lint src --fix --config=.
 ```
 
-### 2) Run mode with lint
+### 2) Run mode with default lint
 
 ```bash
-python shell.py run <file.omi> --lint [lint-flags]
+omi run <file.omi> [lint-flags]
 ```
 
 Behavior:
@@ -73,16 +73,19 @@ Behavior:
 - report is printed first
 - script execution continues unless lint abort conditions are met
 - when `--fix` applies edits, updated source is used for execution
+- use `--nolint` to skip lint for this run
+- `--lint` is accepted for compatibility, but lint is already enabled by default
 
-Example:
+Examples:
 
 ```bash
-python shell.py run app.omi --lint --level=warning
+omi run app.omi --level=warning
+omi run app.omi --nolint
 ```
 
 ### 3) Directive aliases (`@use`)
 
-When lint runs against a single file (`run <file.omi> --lint` or `lint <file.omi>`), you can set lint flags in source via directives:
+When lint runs against a single file (`run <file.omi>` or `lint <file.omi>`), you can set lint flags in source via directives:
 
 ```js
 @use json
@@ -92,6 +95,7 @@ When lint runs against a single file (`run <file.omi> --lint` or `lint <file.omi
 @use rules as "undefined-var,unused-var"
 @use config
 @use config as "./.omilint"
+@use nolint
 ```
 
 Rules:
@@ -99,6 +103,7 @@ Rules:
 - `level` and `rules` require `as <value>`
 - `config` accepts both `@use config` and `@use config as <path>`
 - CLI flags override directive values when both are present
+- `@use nolint` disables the automatic pre-run lint check for the current file
 
 ---
 
@@ -232,8 +237,8 @@ Returns structured object with:
 ## Lint + Test Workflow Recommendations
 
 - During local development:
-	- `python shell.py lint src --level=warning`
-	- `python shell.py test tests`
+	- `omi lint src --level=warning`
+	- `omi test tests`
 - For CI:
-	- `python shell.py lint src --json --level=error`
-	- `python shell.py test tests --json --save=report.json`
+	- `omi lint src --json --level=error`
+	- `omi test tests --json --save=report.json`
