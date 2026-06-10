@@ -104,6 +104,8 @@ Module for OS interaction: command execution, environment variables, platform in
 | `sys.env(name<string>)` | `name`: `string` | Gets an environment variable value |
 | `sys.set_env(name<string>, value<string>)` | `name`: `string`, `value`: `string` | Sets an environment variable |
 | `sys.cwd()` | — | Returns the current working directory |
+| `sys.args()` | no arguments | Returns script launch arguments as `list<string>`, excluding the script file name |
+| `sys.argv()` | no arguments | Returns the script file name followed by launch arguments as `list<string>` |
 | `sys.exit([code<number>])` | `[code]`: `number`, optional, default `0` | Exits the script with a status code |
 
 ```js
@@ -112,9 +114,18 @@ Module for OS interaction: command execution, environment variables, platform in
 println(sys.platform)
 println(sys.username)
 println(sys.cwd())
+println(sys.args())
+println(sys.argv())
 var<string> out = sys.exec("echo hello")
 println(out)
 sys.exit(0)
+```
+
+Pass launch arguments after the file name. Use `--` before arguments that look like CLI flags:
+
+```bash
+omi run app.omi alice 42
+omi run app.omi -- --mode dev
 ```
 
 ---

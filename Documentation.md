@@ -25,6 +25,7 @@
   - [Built-in Constants](#built-in-constants)
 - [Operators](#operators)
   - [Arithmetic Operators](#arithmetic-operators)
+  - [Compound Assignment](#compound-assignment)
   - [Comparison Operators](#comparison-operators)
   - [Membership Operator](#membership-operator)
   - [Logical Operators](#logical-operators)
@@ -61,6 +62,7 @@
   - [Typing Dictionaries](#typing-dictionaries)
 - [Strings](#strings)
   - [F-strings](#f-strings)
+  - [Indexing and Slicing](#indexing-and-slicing)
 - [Type Annotations](#type-annotations)
   - [Variable Annotations](#variable-annotations)
   - [Function Annotations](#function-annotations)
@@ -98,6 +100,14 @@ Single-line comments start with ``//``:
 ```js
 // This is a comment
 var<int> x = 10 // This is also a comment
+```
+
+Multiline comments start with `/{` and end with `}/`:
+
+```js
+/{
+  This whole block is ignored by the lexer.
+}/
 ```
 
 ### Variables
@@ -185,6 +195,7 @@ Rules:
 | `-` | Subtraction | `5 - 2` -> `3` |
 | `*` | Multiplication | `3 * 4` -> `12` |
 | `/` | Division | `10 / 3` -> `3.333...` |
+| `%` | Remainder | `10 % 3` -> `1` |
 | `^` | Exponentiation | `2 ^ 8` -> `256` |
 
 Parentheses override precedence:
@@ -192,6 +203,25 @@ Parentheses override precedence:
 ```js
 var<int> result = (2 + 3) * 4  // 20
 ```
+
+### Compound Assignment
+
+Variables, array elements, and dictionary entries support arithmetic compound assignment:
+
+```js
+var<int> count = 1
+count += 2
+count *= 3
+println(count)  // 9
+
+var[int] nums = [10, 20]
+nums[0] += 5
+
+var<dict> data = {"hits": 1}
+data["hits"] += 1
+```
+
+Supported operators are `+=`, `-=`, `*=`, `/=`, and `%=`.
 
 ### Comparison Operators
 
@@ -707,6 +737,7 @@ Operator shortcuts:
 | `arr - idx` | Remove element at index |
 | `arr * arr2` | Concatenate two arrays |
 | `arr / idx` | Access element at index |
+| `arr[idx]` | Access element at index |
 | `arr[start:end]` | Return a slice from start to end |
 
 ```js
@@ -714,6 +745,15 @@ var<array> items = [10, 20, 30]
 println(items / 0)   // 10
 println(items / 2)   // 30
 println(items[0:2])  // [10, 20]
+```
+
+Arrays can be updated through index assignment. Typed arrays and size limits are still enforced:
+
+```js
+var[int] items = [10, 20, 30]
+items[1] = 25
+items[2] += 5
+println(items)  // [10, 25, 35]
 ```
 
 ---
@@ -755,8 +795,16 @@ Both notations work inside f-string interpolations:
 
 ```js
 var<string> key = "name"
-println("~(user["name"])")        // Alice
+println("~(user[\"name\"])")      // Alice
 println("host: ~(config.host)")   // localhost
+```
+
+Dictionary entries can be updated through bracket assignment. Dot assignment is not supported; use a string key:
+
+```js
+user["name"] = "Bob"
+user["visits"] = 1
+user["visits"] += 1
 ```
 
 Accessing a key that does not exist is a **runtime error**:
@@ -920,6 +968,18 @@ To include a literal tilde, escape it:
 
 ```js
 println("Hello\~world")  // Hello~world
+```
+
+### Indexing and Slicing
+
+Strings support integer indexing and `[start:end]` slicing:
+
+```js
+var<string> text = "omilang"
+println(text[0])     // o
+println(text[1:4])   // mil
+println(text[:3])    // omi
+println(text[3:])    // lang
 ```
 
 ---
@@ -1205,7 +1265,7 @@ var x = 42
 | `println(value, [end])` | Prints a value and ends with `"\n"` by default. Optional `end` overrides the suffix. |
 | `reprint(value)` | Returns the string form of a value without printing it. |
 | `output(v1, v2, ...)` | Prints multiple values separated by spaces and ends the line. |
-| `input()` | Reads a line from stdin as a string |
+| `input([prompt])` | Reads a line from stdin as a string. The prompt defaults to `">>> "` |
 
 ```js
 print("hello")
@@ -1214,6 +1274,7 @@ println("!")          // hello world!\n
 println("bye", "\t") // bye\t
 output(1, 2, "hello", 3) // 1 2 hello 3\n
 var<string> s = reprint(42) // "42"
+var<string> answer = input("Name: ")
 ```
 
 ### Type Checks
@@ -1464,7 +1525,7 @@ omi
 Run a script file:
 
 ```
-omi run filename.omi
+omi run filename.omi [lint-flags] [-- script-args...]
 ```
 
 Flags:
@@ -1492,6 +1553,8 @@ Flags:
 | `--rules=<list>` | Comma-separated list of rule names |
 | `--config[=path]` | Load lint config from `.omilint` or the provided path |
 
+Script arguments after the file name are passed to the program. Use `--` when an argument starts with `--` or could be confused with a lint flag. They are available through `omi:system` as `sys.args()` and `sys.argv()`.
+
 ### Test Flags
 
 | Flag | Description |
@@ -1505,6 +1568,8 @@ Flags:
 ```
 omi run file.omi --debug          # Run with debug output
 omi run file.omi --nolint         # Run without automatic lint
+omi run file.omi alice 42         # Pass script args
+omi run file.omi -- --mode dev    # Pass args that look like flags
 omi lint file.omi --fix           # Lint and apply auto-fixes
 omi test test.omi --json          # Run tests with JSON output
 omi test test.omi --save          # Run tests and save report

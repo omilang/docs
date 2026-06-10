@@ -11,6 +11,7 @@
 ## Navigation
 
 - [Documentation](Documentation.md) - syntax, types, functions, imports
+- [LanguageSpec](LanguageSpec.md) - guaranteed language rules
 - [Modules](Modules.md) - built-in modules
 - [Linter](Linter.md) - static analysis, rules, config, and CLI
 - [Tests](Tests.md) - test DSL, runner flags, and reports
