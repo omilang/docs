@@ -26,6 +26,7 @@
 - [Operators](#operators)
   - [Arithmetic Operators](#arithmetic-operators)
   - [Compound Assignment](#compound-assignment)
+  - [Increment / Decrement](#increment--decrement)
   - [Comparison Operators](#comparison-operators)
   - [Membership Operator](#membership-operator)
   - [Logical Operators](#logical-operators)
@@ -222,6 +223,26 @@ data["hits"] += 1
 ```
 
 Supported operators are `+=`, `-=`, `*=`, `/=`, and `%=`.
+
+### Increment / Decrement
+
+Use `++` and `--` to add or subtract `1` from a variable or a mutable indexed value:
+
+```js
+var<int> count = 1
+println(count++)   // 1
+println(count)     // 2
+println(++count)   // 3
+println(count--)   // 3
+println(count)     // 2
+println(--count)   // 1
+```
+
+Both prefix and postfix forms are supported:
+
+- `value++` and `value--` return the old value, then update the target.
+- `++value` and `--value` update the target first, then return the new value.
+- Targets can be variables or indexed list/dictionary elements.
 
 ### Comparison Operators
 

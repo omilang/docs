@@ -67,6 +67,7 @@ enum Result<T, E> = {
 - The ternary operator is written as `value_if_true ~ condition ~ value_if_false`.
 - Null coalescing is written as `left ?? fallback`.
 - Compound assignment is guaranteed for `+=`, `-=`, `*=`, `/=`, and `%=`.
+- Increment/decrement is written as `value++`, `value--`, `++value`, or `--value` on variables and indexed list/dictionary elements; postfix returns the old value and prefix returns the updated value.
 - Indexing and slicing apply to supported collections and strings.
 
 ## Scope
