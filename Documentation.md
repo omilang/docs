@@ -25,7 +25,10 @@
   - [Built-in Constants](#built-in-constants)
 - [Operators](#operators)
   - [Arithmetic Operators](#arithmetic-operators)
+  - [Compound Assignment](#compound-assignment)
+  - [Increment / Decrement](#increment--decrement)
   - [Comparison Operators](#comparison-operators)
+  - [Membership Operator](#membership-operator)
   - [Logical Operators](#logical-operators)
   - [Ternary Operator](#ternary-operator)
   - [Null Coalescing Operator](#null-coalescing-operator)
@@ -48,6 +51,7 @@
   - [Functions as Arguments](#functions-as-arguments)
 - [Error Handling and Pattern Matching](#error-handling-and-pattern-matching)
   - [try / catch / final](#try--catch--final)
+  - [throw](#throw)
   - [match / case](#match--case)
 - [Arrays](#arrays)
   - [Typed Arrays](#typed-arrays)
@@ -59,6 +63,7 @@
   - [Typing Dictionaries](#typing-dictionaries)
 - [Strings](#strings)
   - [F-strings](#f-strings)
+  - [Indexing and Slicing](#indexing-and-slicing)
 - [Type Annotations](#type-annotations)
   - [Variable Annotations](#variable-annotations)
   - [Function Annotations](#function-annotations)
@@ -96,6 +101,14 @@ Single-line comments start with ``//``:
 ```js
 // This is a comment
 var<int> x = 10 // This is also a comment
+```
+
+Multiline comments start with `/{` and end with `}/`:
+
+```js
+/{
+  This whole block is ignored by the lexer.
+}/
 ```
 
 ### Variables
@@ -147,7 +160,7 @@ const APP_NAME = "Omi"
 Rules:
 - Constants must have an initial value — `const<int> X` without `=` is a syntax error.
 - Reassignment (`MAX = 200`) raises a runtime error.
-- Mutating array constants via `append`, `pop`, or `extend` raises a runtime error.
+- Mutating array constants via `append`, `pop`, `extend`, `insert`, `remove`, `reverse`, or `sort` raises a runtime error.
 
 ### Data Types
 
@@ -183,6 +196,7 @@ Rules:
 | `-` | Subtraction | `5 - 2` -> `3` |
 | `*` | Multiplication | `3 * 4` -> `12` |
 | `/` | Division | `10 / 3` -> `3.333...` |
+| `%` | Remainder | `10 % 3` -> `1` |
 | `^` | Exponentiation | `2 ^ 8` -> `256` |
 
 Parentheses override precedence:
@@ -190,6 +204,45 @@ Parentheses override precedence:
 ```js
 var<int> result = (2 + 3) * 4  // 20
 ```
+
+### Compound Assignment
+
+Variables, array elements, and dictionary entries support arithmetic compound assignment:
+
+```js
+var<int> count = 1
+count += 2
+count *= 3
+println(count)  // 9
+
+var[int] nums = [10, 20]
+nums[0] += 5
+
+var<dict> data = {"hits": 1}
+data["hits"] += 1
+```
+
+Supported operators are `+=`, `-=`, `*=`, `/=`, and `%=`.
+
+### Increment / Decrement
+
+Use `++` and `--` to add or subtract `1` from a variable or a mutable indexed value:
+
+```js
+var<int> count = 1
+println(count++)   // 1
+println(count)     // 2
+println(++count)   // 3
+println(count--)   // 3
+println(count)     // 2
+println(--count)   // 1
+```
+
+Both prefix and postfix forms are supported:
+
+- `value++` and `value--` return the old value, then update the target.
+- `++value` and `--value` update the target first, then return the new value.
+- Targets can be variables or indexed list/dictionary elements.
 
 ### Comparison Operators
 
@@ -201,6 +254,27 @@ var<int> result = (2 + 3) * 4  // 20
 | `>` | Greater than |
 | `<=` | Less than or equal |
 | `>=` | Greater than or equal |
+
+### Membership Operator
+
+Use `in` to test membership in arrays, dictionaries, and strings:
+
+```js
+var[string] roles = ["admin", "editor"]
+var<dict> user = {"name": "Omi", "age": 1}
+var<string> text = "hello omi"
+
+println("admin" in roles)  // true
+println("guest" in roles)  // false
+println("name" in user)    // true
+println("omi" in text)     // true
+```
+
+Rules:
+- For arrays, `value in array` compares values.
+- For dictionaries, `key in dict` checks string keys.
+- For strings, `substring in string` checks substring presence.
+- Other right-hand values raise a runtime error.
 
 ### Logical Operators
 
@@ -578,6 +652,28 @@ The `catch` variable is a dict-like error object with fields:
 - `msg`
 - `trace` (array of traceback lines)
 
+### throw
+
+Use `throw` to raise a runtime error yourself. It can be caught with `try / catch` and still runs `final` blocks:
+
+```js
+func<void> require_positive(age<int>):
+  if age <= 0:
+    throw "age must be positive"
+  end
+end
+
+try:
+  require_positive(0)
+catch err:
+  println("THROW: ~err.msg")
+final:
+  println("checked")
+end
+```
+
+The throw message can be any expression; it is converted to text in the runtime error.
+
 ### match / case
 
 Use `match` for value/variant dispatch.
@@ -640,7 +736,14 @@ var<array> items = [1, 2, 3]
 
 append(items, 4)            // items = [1, 2, 3, 4]
 pop(items, 0)               // removes item at index 0, returns it
-var<int> size = len(items)  // 3
+insert(items, 1, 9)         // items = [2, 9, 3, 4]
+remove(items, 9)            // returns true and removes first matching value
+contains(items, 3)          // true
+index_of(items, 4)          // 2
+var<array> part = slice(items, 0, 2)
+reverse(items)
+sort(items)
+var<int> size = len(items)
 
 var<array> a = [1, 2]
 var<array> b = [3, 4]
@@ -655,11 +758,23 @@ Operator shortcuts:
 | `arr - idx` | Remove element at index |
 | `arr * arr2` | Concatenate two arrays |
 | `arr / idx` | Access element at index |
+| `arr[idx]` | Access element at index |
+| `arr[start:end]` | Return a slice from start to end |
 
 ```js
 var<array> items = [10, 20, 30]
 println(items / 0)   // 10
 println(items / 2)   // 30
+println(items[0:2])  // [10, 20]
+```
+
+Arrays can be updated through index assignment. Typed arrays and size limits are still enforced:
+
+```js
+var[int] items = [10, 20, 30]
+items[1] = 25
+items[2] += 5
+println(items)  // [10, 25, 35]
 ```
 
 ---
@@ -701,8 +816,16 @@ Both notations work inside f-string interpolations:
 
 ```js
 var<string> key = "name"
-println("~(user["name"])")        // Alice
+println("~(user[\"name\"])")      // Alice
 println("host: ~(config.host)")   // localhost
+```
+
+Dictionary entries can be updated through bracket assignment. Dot assignment is not supported; use a string key:
+
+```js
+user["name"] = "Bob"
+user["visits"] = 1
+user["visits"] += 1
 ```
 
 Accessing a key that does not exist is a **runtime error**:
@@ -787,6 +910,21 @@ println(is_dict(user))   // true
 println(is_dict(42))     // false
 ```
 
+Dictionary helpers are available from the `omi:dict` module:
+
+```js
+@import "omi:dict" as dict
+
+var<dict> user = {"name": "Alice"}
+
+println(dict.has(user, "name"))          // true
+println(dict.get(user, "age", 0))        // 0
+dict.set(user, "age", 30)
+println(dict.keys(user))                 // ["name", "age"]
+println(dict.values(user))               // ["Alice", 30]
+println(dict.delete(user, "age"))        // true
+```
+
 ---
 
 ## Strings
@@ -851,6 +989,18 @@ To include a literal tilde, escape it:
 
 ```js
 println("Hello\~world")  // Hello~world
+```
+
+### Indexing and Slicing
+
+Strings support integer indexing and `[start:end]` slicing:
+
+```js
+var<string> text = "omilang"
+println(text[0])     // o
+println(text[1:4])   // mil
+println(text[:3])    // omi
+println(text[3:])    // lang
 ```
 
 ---
@@ -1136,7 +1286,7 @@ var x = 42
 | `println(value, [end])` | Prints a value and ends with `"\n"` by default. Optional `end` overrides the suffix. |
 | `reprint(value)` | Returns the string form of a value without printing it. |
 | `output(v1, v2, ...)` | Prints multiple values separated by spaces and ends the line. |
-| `input()` | Reads a line from stdin as a string |
+| `input([prompt])` | Reads a line from stdin as a string. The prompt defaults to `">>> "` |
 
 ```js
 print("hello")
@@ -1145,6 +1295,7 @@ println("!")          // hello world!\n
 println("bye", "\t") // bye\t
 output(1, 2, "hello", 3) // 1 2 hello 3\n
 var<string> s = reprint(42) // "42"
+var<string> answer = input("Name: ")
 ```
 
 ### Type Checks
@@ -1170,6 +1321,13 @@ All functions return `true` or `false`:
 | `append(list, value)` | Appends an element to a list (error on `const` arrays) |
 | `pop(list, index)` | Removes and returns element by index (error on `const` arrays) |
 | `extend(listA, listB)` | Appends all elements from listB to listA (error on `const` arrays) |
+| `insert(list, index, value)` | Inserts a value at index (error on `const` arrays) |
+| `remove(list, value)` | Removes the first matching value and returns `true`; returns `false` if absent |
+| `contains(list, value)` | Returns whether the array contains value |
+| `index_of(list, value)` | Returns the first matching index, or `-1` |
+| `slice(list, start, end)` | Returns a new array from `start` inclusive to `end` exclusive |
+| `reverse(list)` | Reverses an array in place (error on `const` arrays) |
+| `sort(list)` | Sorts an array of same-type comparable values in place (error on `const` arrays) |
 | `len(value)` | Returns the length — number of elements for arrays, number of characters for strings |
 | `range(stop)` / `range(start, stop, [step])` | Returns an array of integers from `0` to `stop` (exclusive), or from `start` to `stop` with optional `step` (default `1`) |
 
@@ -1211,6 +1369,7 @@ Loads a module (built-in or from a file) and binds it to an alias:
 @import "omi:time" as time
 @import "omi:txt" as txt
 @import "omi:string" as str
+@import "omi:dict" as dict
 @import "omi:regex" as rx
 @import "omi:log" as log
 @import "omi:color" as color
@@ -1259,6 +1418,7 @@ Enables or disables interpreter features for the current file:
 | `level` | Alias for CLI `--level=<...>` in `lint` flows |
 | `rules` | Alias for CLI `--rules=<...>` in `lint` flows |
 | `config` | Alias for CLI `--config[=path]` in `lint` flows |
+| `nolint` | Disables automatic lint before `run` for the current file |
 | `save` | Alias for CLI `--save[=path]` in `test` flows (`.test.omi` only) |
 
 Forms:
@@ -1277,6 +1437,7 @@ Forms:
 @use rules as "undefined-var,unused-var"
 @use config
 @use config as "./.omilint"
+@use nolint
 ```
 
 `@use save` is valid only in `.test.omi` files. Using it in a regular `.omi` file raises a runtime error.
@@ -1385,7 +1546,7 @@ omi
 Run a script file:
 
 ```
-omi run filename.omi
+omi run filename.omi [lint-flags] [-- script-args...]
 ```
 
 Flags:
@@ -1401,14 +1562,19 @@ Flags:
 
 ### Lint Flags
 
+`omi run <file.omi>` runs lint before execution by default. Use `--nolint` or `@use nolint` to skip that pre-run check.
+
 | Flag | Description |
 |------|-------------|
+| `--nolint` | Disable lint before execution in `run` mode |
 | `--fix` | Apply auto-fixes when possible |
 | `--json` | Print lint report as JSON |
-| `--failfast` | Stop after lint errors when used with run --lint |
+| `--failfast` | Stop after lint errors when used with `run` |
 | `--level=<name>` | Filter by severity level |
 | `--rules=<list>` | Comma-separated list of rule names |
 | `--config[=path]` | Load lint config from `.omilint` or the provided path |
+
+Script arguments after the file name are passed to the program. Use `--` when an argument starts with `--` or could be confused with a lint flag. They are available through `omi:system` as `sys.args()` and `sys.argv()`.
 
 ### Test Flags
 
@@ -1422,6 +1588,9 @@ Flags:
 
 ```
 omi run file.omi --debug          # Run with debug output
+omi run file.omi --nolint         # Run without automatic lint
+omi run file.omi alice 42         # Pass script args
+omi run file.omi -- --mode dev    # Pass args that look like flags
 omi lint file.omi --fix           # Lint and apply auto-fixes
 omi test test.omi --json          # Run tests with JSON output
 omi test test.omi --save          # Run tests and save report

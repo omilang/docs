@@ -4,13 +4,14 @@
 
 > Complete guide to the Omi programming language
 
-**Documentation for the version:** 1.5.1
+**Documentation for the version:** 1.6.0
 
 ---
 
 ## Navigation
 
 - [Documentation](Documentation.md) - syntax, types, functions, imports
+- [LanguageSpec](LanguageSpec.md) - guaranteed language rules
 - [Modules](Modules.md) - built-in modules
 - [Linter](Linter.md) - static analysis, rules, config, and CLI
 - [Tests](Tests.md) - test DSL, runner flags, and reports

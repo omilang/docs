@@ -26,6 +26,7 @@
 - [http](#http)
 - [txt](#txt)
 - [string](#string)
+- [dict](#dict)
 - [regex](#regex)
 - [color](#color)
 - [python](#python)
@@ -41,6 +42,7 @@ Built-in modules are imported with `@import` using the `omi:` prefix:
 @import "omi:system" as sys
 @import "omi:json" as json
 @import "omi:http" as http
+@import "omi:dict" as dict
 ```
 
 After import, all module functions are available through the alias via dot notation.
@@ -102,6 +104,8 @@ Module for OS interaction: command execution, environment variables, platform in
 | `sys.env(name<string>)` | `name`: `string` | Gets an environment variable value |
 | `sys.set_env(name<string>, value<string>)` | `name`: `string`, `value`: `string` | Sets an environment variable |
 | `sys.cwd()` | — | Returns the current working directory |
+| `sys.args()` | no arguments | Returns script launch arguments as `list<string>`, excluding the script file name |
+| `sys.argv()` | no arguments | Returns the script file name followed by launch arguments as `list<string>` |
 | `sys.exit([code<number>])` | `[code]`: `number`, optional, default `0` | Exits the script with a status code |
 
 ```js
@@ -110,9 +114,18 @@ Module for OS interaction: command execution, environment variables, platform in
 println(sys.platform)
 println(sys.username)
 println(sys.cwd())
+println(sys.args())
+println(sys.argv())
 var<string> out = sys.exec("echo hello")
 println(out)
 sys.exit(0)
+```
+
+Pass launch arguments after the file name. Use `--` before arguments that look like CLI flags:
+
+```bash
+omi run app.omi alice 42
+omi run app.omi -- --mode dev
 ```
 
 ---
@@ -507,6 +520,40 @@ println(str.pad_left("5", 3, "0"))      // 005
 println(str.index_of("hello", "ll"))    // 2
 println(str.format("Hello, {}!", ["Omi"]))          // Hello, Omi!
 println(str.format("{name} is {age}", {"name": "Omi", "age": "2"}))
+```
+
+---
+
+## dict
+
+Module for dictionary lookup, mutation, and key/value extraction.
+
+```js
+@import "omi:dict" as dict
+```
+
+| Function | Accepted arguments | Description |
+|---------|---------------------|-------------|
+| `dict.has(dict<dict>, key<string>)` | `dict`: `dict`, `key`: `string` | Returns `true` if the key exists |
+| `dict.get(dict<dict>, key<string>, [default<every>])` | `dict`: `dict`, `key`: `string`, `[default]`: any, optional, default `null` | Returns the value for `key`, or default/null if missing |
+| `dict.set(dict<dict>, key<string>, value<every>)` | `dict`: `dict`, `key`: `string`, `value`: any | Sets a key and returns the dict |
+| `dict.delete(dict<dict>, key<string>)` | `dict`: `dict`, `key`: `string` | Deletes a key and returns whether it existed |
+| `dict.keys(dict<dict>)` | `dict`: `dict` | Returns keys as `list<string>` |
+| `dict.values(dict<dict>)` | `dict`: `dict` | Returns values as `list` |
+
+`dict.set` and `dict.delete` respect `const` dictionaries and structured dict type checks.
+
+```js
+@import "omi:dict" as dict
+
+var<dict> user = {"name": "Alice"}
+
+println(dict.has(user, "name"))       // true
+println(dict.get(user, "age", 0))     // 0
+dict.set(user, "age", 30)
+println(dict.keys(user))              // ["name", "age"]
+println(dict.values(user))            // ["Alice", 30]
+println(dict.delete(user, "age"))     // true
 ```
 
 ---
